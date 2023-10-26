@@ -1,0 +1,10 @@
+---
+
+- name: restart php-fpm
+  ansible.builtin.service:
+    name: "{{ nextcloud_php_daemon.name }}"
+    state: restarted
+  when:
+    - nextcloud_php_daemon.restart
+
+...

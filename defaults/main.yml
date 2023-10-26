@@ -1,0 +1,56 @@
+---
+
+nextcloud_version: 26.0.5
+
+nextcloud_direct_download: false
+
+nextcloud_release: {}
+
+nextcloud_install_base_directory: /var/www
+
+nextcloud_owner: www-data
+nextcloud_group: www-data
+
+# ----
+
+nextcloud_instande_id: ""
+nextcloud_password_salt: ""
+nextcloud_data_directory: ""
+
+nextcloud_trusted_domains: []
+
+nextcloud_database:
+  type: sqlite
+  name: nextcloud
+  # username: nextcloud
+  # password:
+  # hostname:
+  # port: 3306
+  # schema: nextcloud
+  persistent: false
+
+nextcloud_defaults:
+  language:
+    default: en
+    # force: en
+  locale:
+    default: en_GB
+    # force: en_GB
+  phone_region: DE
+  apps:
+    - dashboard
+    - files
+  knowledgebase_enabled: true
+
+nextcloud_php_daemon:
+  restart: true
+  name: "{{ php_fpm_daemon }}"
+
+nextcloud_background_jobs:
+  type: cron # alternative and currently not supported: webcron | ajax
+  cron:
+    minute: ""
+    hour: ""
+    day: ""
+
+...
