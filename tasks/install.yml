@@ -51,7 +51,6 @@
   ansible.builtin.stat:
     path: "{{ nextcloud_install_base_directory }}/nextcloud-{{ nextcloud_version }}/lib/versioncheck.php"
     get_checksum: false
-    get_checksum: false
     get_mime: false
     get_attributes: false
   register: __stat_present_nextcloud
@@ -60,7 +59,6 @@
 - name: detect type of {{ nextcloud_install_base_directory }}/server
   ansible.builtin.stat:
     path: "{{ nextcloud_install_base_directory }}/server"
-    get_checksum: false
     get_checksum: false
     # get_mime: false
     get_attributes: false
