@@ -7,6 +7,10 @@ Ansible role to install and configure nextcloud.
 
 ## Requirements & Dependencies
 
+Python
+
+- `dirsync`
+
 Ansible Collections
 
 - [bodsch.core](https://github.com/bodsch/ansible-collection-core)

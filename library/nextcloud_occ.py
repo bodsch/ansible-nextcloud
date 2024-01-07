@@ -332,7 +332,7 @@ The current PHP memory limit is below the recommended value of 512MB.
         "datadirectory": "***REMOVED SENSITIVE VALUE***",
         "dbtype": "mysql",
         "version": "26.0.5.1",
-        "overwrite.cli.url": "http:\/\/localhost",
+        "overwrite.cli.url": "http://localhost",
         "dbname": "***REMOVED SENSITIVE VALUE***",
         "dbhost": "***REMOVED SENSITIVE VALUE***",
         "dbport": "",

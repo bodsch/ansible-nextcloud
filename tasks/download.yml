@@ -49,7 +49,6 @@
     path: "{{ nextcloud_local_tmp_directory }}/{{ nextcloud_release.file }}"
   register: stat_nextcloud_archive
 
-
 - name: download
   when:
     - stat_nextcloud_archive.stat is defined

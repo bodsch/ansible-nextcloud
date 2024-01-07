@@ -88,6 +88,8 @@ class NextcloudClient(object):
 
         data = self.config_opts()
 
+        self.module.log(msg=f" config opts   : '{data}'")
+
         create_directory(directory=self.tmp_directory, mode="0750")
         tmp_file     = os.path.join(self.tmp_directory, "ansible.json")
 
@@ -185,7 +187,7 @@ class NextcloudClient(object):
         if self.config_parameters:
             parameters = self.config_parameters
 
-            # self.module.log(f" parameters       : {parameters}")
+            self.module.log(f" parameters       : {parameters}")
 
             language = parameters.get("language")
 
@@ -568,7 +570,8 @@ class NextcloudClient(object):
                 memcache_servers = memcache.get("servers", [])
 
                 if memcache_servers:
-                    data["system"]['memcached_servers'] = memcache_servers
+                    memchache_array = [list(x.values()) for x in memcache_servers]
+                    data["system"]['memcached_servers'] = memchache_array
 
                 if memcache.get("options", None):
                     data["system"]['memcached_options'] = memcache.get("options", None)
@@ -576,7 +579,54 @@ class NextcloudClient(object):
             redis = parameters.get("redis")
 
             if redis:
-                pass
+                redis_array = []
+                for r in redis:
+                    a = {}
+                    if r.get("host", None):
+                        a["host"] = r.get("host", None)
+                    if r.get("port", None):
+                        a["port"] = r.get("port", None)
+                    if r.get("timeout", None):
+                        a["timeout"] = r.get("timeout", None)
+                    if r.get("password", None):
+                        a["password"] = r.get("password", None)
+                    if r.get("dbindex", None):
+                        a["dbindex"] = r.get("dbindex", None)
+
+                    redis_array.append(a)
+                data["system"]["redis"] = redis_array
+
+        if self.database:
+            parameters = self.database
+
+            if parameters.get("type", None) == "mysql":
+                if parameters.get("mysql", {}).get("utf8mb4", None):
+                    data["system"]['mysql.utf8mb4'] = parameters.get("mysql", {}).get("utf8mb4", None)
+
+                if parameters.get("mysql", {}).get("collation", None):
+                    data["system"]['mysql.collation'] = parameters.get("mysql", {}).get("collation", None)
+
+            if parameters.get("type", None) == "sqlite3":
+                if parameters.get("sqlite", {}).get("journal_mode", None):
+                    data["system"]['sqlite.journal_mode'] = parameters.get("sqlite", {}).get("journal_mode", None)
+
+            if parameters.get("username", None):
+                data["system"]['dbuser'] = parameters.get("username", None)
+
+            if parameters.get("password", None):
+                data["system"]['dbpassword'] = parameters.get("password", None)
+
+            if parameters.get("hostname", None):
+                data["system"]['dbhost'] = parameters.get("hostname", None)
+
+            if parameters.get("port", None):
+                data["system"]['dbport'] = parameters.get("port", None)
+
+            if parameters.get("schema", None):
+                data["system"]['dbname'] = parameters.get("schema", None)
+
+            if parameters.get("tableprefix", None):
+                data["system"]['dbtableprefix'] = parameters.get("tableprefix", None)
 
         """
 

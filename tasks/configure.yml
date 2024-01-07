@@ -13,7 +13,7 @@
     - name: create custom data directory
       ansible.builtin.file:
         state: directory
-        mode: 0770
+        mode: "02770"
         owner: "{{ nextcloud_owner }}"
         group: "{{ nextcloud_group }}"
         path: "{{ nextcloud_defaults.data_directory }}"
@@ -22,7 +22,7 @@
       ansible.builtin.copy:
         dest: "{{ nextcloud_defaults.data_directory }}/.ocdata"
         content: ""
-        mode: 0770
+        mode: "0770"
         owner: "{{ nextcloud_owner }}"
         group: "{{ nextcloud_group }}"
 
@@ -40,8 +40,8 @@
       username: "{{ nextcloud_database.username | default(omit) }}"
       password: "{{ nextcloud_database.password | default(omit) }}"
     admin:
-      username: admin
-      password: admin
+      username: "{{ nextcloud_admin.username | default('admin') }}"
+      password: "{{ nextcloud_admin.password | default('admin') }}"
   register: nc_status
 
 # - name: d

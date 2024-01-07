@@ -26,11 +26,14 @@ nginx_vhosts:
 
     domains:
       - nextcloud.molecule.lan
+      - nextcloud.molecule.local
 
     listen:
       - 80
 
     root_directory: "{{ nextcloud_install_base_directory }}/server"
+    root_directory_create: false
+
     index:
       - index.php
       - index.html

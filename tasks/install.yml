@@ -24,22 +24,19 @@
     - nextcloud_directories is defined
     - nextcloud_directories | count > 0
 
-# TODO
-# verify memcache and redis configuration with installed packages
+- name: append php redis packages while redis host are defined
+  ansible.builtin.set_fact:
+    nextcloud_dependencies: "{{ nextcloud_dependencies + nextcloud_php_packages.redis }}"
+  register: package_version
+  when:
+    - nextcloud_defaults.redis | default([]) | nc_configured_cache('redis') | count > 0
 
-# - name: get installed database package name
-#   bodsch.core.package_version:
-#     package_name: "{{ _nextcloud_package_mariadb_clients }}"
-#     state: installed
-#   register: package_version
-#
-# - name: remove mariadb-client-core from dependency list if it already installed
-#   ansible.builtin.set_fact:
-#     nextcloud_dependencies: "{{ nextcloud_dependencies | reject('search', 'default-mysql-client-core') | list }}"
-#   when:
-#     - package_version is defined
-#     - package_version.available is defined
-#     - package_version.available.full_version is defined
+- name: append php memcache packages while memcache host are defined
+  ansible.builtin.set_fact:
+    nextcloud_dependencies: "{{ nextcloud_dependencies + nextcloud_php_packages.memcache }}"
+  register: package_version
+  when:
+    - nextcloud_defaults.memcache | default({}) | nc_configured_cache('memcache') | count > 0
 
 - name: install dependencies
   ansible.builtin.package:

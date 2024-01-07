@@ -54,11 +54,11 @@
     - role: snapd
     - role: mariadb
 
-- name: prepare instance container
-  hosts: instance
-  gather_facts: true
-
-  roles:
-    - role: nginx
-    - role: php-fpm
-    - role: composer
+# - name: prepare instance container
+#   hosts: instance
+#   gather_facts: true
+#
+#   roles:
+#     - role: nginx
+#     - role: php-fpm
+#     # - role: composer

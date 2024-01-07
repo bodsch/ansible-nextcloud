@@ -16,12 +16,20 @@ nextcloud_remote_tmp_directory: "{{ nextcloud_cache_directory }}/{{ nextcloud_ve
 
 nextcloud_dependencies:
   - python3-pip
-  - php-curl
-  - php-mbstring
-  - php-zip
-  - php-intl
-  - php-gd
-  - php-mysql
+  - php{{ php_version }}-xmlrpc
+  - php{{ php_version }}-ldap
+  - php{{ php_version }}-curl
+  - php{{ php_version }}-mbstring
+  - php{{ php_version }}-zip
+  - php{{ php_version }}-intl
+  - php{{ php_version }}-gd
+  - php{{ php_version }}-mysql
+
+nextcloud_php_packages:
+  redis:
+    - php{{ php_version }}-redis
+  memcache:
+    - php{{ php_version }}-memcached
 
 nextcloud_python_packages:
   # - name: mysqlclient
@@ -275,20 +283,20 @@ nextcloud_defaults_defaults:
       # # Binary serializer vill be enabled if the igbinary PECL module is available
       # # - \Memcached::OPT_SERIALIZER => \Memcached::SERIALIZER_IGBINARY,
 
-  redis:
-    - host: 'localhost'                                 # can also be a unix domain socket: '/tmp/redis.sock'
-      port: 6379
-      timeout: 0.0
-      read_timeout: 0.0
-      user: ''                                          # Optional: if not defined, no password will be used.
-      password: ''                                      # Optional: if not defined, no password will be used.
-      dbindex: 0                                        # Optional: if undefined SELECT will not run and will use Redis Server's default DB Index.
-      # If redis in-transit encryption is enabled, provide certificates
-      # SSL context https://www.php.net/manual/en/context.ssl.php
-      ssl_context:
-        - local_cert: '/certs/redis.crt'
-        - local_pk: '/certs/redis.key'
-        - cafile: '/certs/ca.crt'
+  redis: []
+    # - host: 'localhost'                                 # can also be a unix domain socket: '/tmp/redis.sock'
+    #   port: 6379
+    #   timeout: 0.0
+    #   read_timeout: 0.0
+    #   user: ''                                          # Optional: if not defined, no password will be used.
+    #   password: ''                                      # Optional: if not defined, no password will be used.
+    #   dbindex: 0                                        # Optional: if undefined SELECT will not run and will use Redis Server's default DB Index.
+    #   # If redis in-transit encryption is enabled, provide certificates
+    #   # SSL context https://www.php.net/manual/en/context.ssl.php
+    #   ssl_context:
+    #     - local_cert: '/certs/redis.crt'
+    #     - local_pk: '/certs/redis.key'
+    #     - cafile: '/certs/ca.crt'
 
     # cluster:
     #   - seeds:                                          # provide some or all of the cluster servers to bootstrap discovery, port required
@@ -336,7 +344,6 @@ nextcloud_defaults_defaults:
     Cost: ""                                                    # 10
 
   query_log_file: ""
-
 
 nextcloud_defaults_release:
   download_url: https://download.nextcloud.com/server/releases
