@@ -1,0 +1,18 @@
+---
+
+php_fpm_daemon: php-fpm{{ php_major_version }}
+
+nextcloud_user_default: http
+
+nextcloud_dependencies:
+  - python-pip
+  - php-intl
+  - php-gd
+
+nextcloud_php_packages:
+  redis:
+    - php-redis
+  memcache:
+    - php-memcached
+
+...
