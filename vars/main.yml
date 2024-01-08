@@ -18,6 +18,8 @@ nextcloud_user_default: www-data
 
 nextcloud_dependencies:
   - unzip
+  - tar
+  - bzip2
   - python3-pip
   - php{{ php_version }}-xmlrpc
   - php{{ php_version }}-ldap
