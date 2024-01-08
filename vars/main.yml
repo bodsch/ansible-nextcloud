@@ -17,6 +17,7 @@ nextcloud_remote_tmp_directory: "{{ nextcloud_cache_directory }}/{{ nextcloud_ve
 nextcloud_user_default: www-data
 
 nextcloud_dependencies:
+  - unzip
   - python3-pip
   - php{{ php_version }}-xmlrpc
   - php{{ php_version }}-ldap
