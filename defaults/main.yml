@@ -8,8 +8,8 @@ nextcloud_release: {}
 
 nextcloud_install_base_directory: /var/www
 
-nextcloud_owner: www-data
-nextcloud_group: www-data
+nextcloud_owner: "" # www-data
+nextcloud_group: "" # www-data
 
 nextcloud_admin:
   username: admin

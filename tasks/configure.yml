@@ -76,6 +76,7 @@
   nextcloud_config:
     working_dir: "{{ nextcloud_install_base_directory }}/server"
     owner: "{{ nextcloud_owner }}"
+    group: "{{ nextcloud_group }}"
     diff_output: false
     config_parameters: "{{ nextcloud_defaults }}"
     trusted_domains: "{{ nextcloud_trusted_domains }}"

@@ -6,6 +6,6 @@
 
   roles:
     # - role: nginx
-    # - role: php-fpm
+    - role: php-fpm
     # - role: composer
     - role: ansible-nextcloud

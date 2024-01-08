@@ -45,4 +45,34 @@
   when:
     - nextcloud_main_version is version('2', '==', strict=False)
 
+
+- name: define nextcloud user
+  ansible.builtin.set_fact:
+    nextcloud_owner: "{{ nextcloud_user_default }}"
+  when:
+    - not nextcloud_owner is defined or nextcloud_owner | length == 0
+
+- name: re-define primary group
+  when:
+    - not nextcloud_group is defined or nextcloud_group | length == 0
+  block:
+    - name: "find primary group for user '{{ nextcloud_owner }}'"
+      ansible.builtin.getent:
+        database: group
+        key: "{{ nextcloud_owner }}"
+        split: ':'
+
+    - name: "set nextcloud_group '{{ getent_group | list | first }}'"
+      ansible.builtin.set_fact:
+        nextcloud_group: "{{ getent_group | list | first }}"
+      when:
+        - getent_group is defined
+
+- name: assert pool group
+  ansible.builtin.assert:
+    that:
+      - nextcloud_group is defined or nextcloud_group | length == 0
+    msg: no nextcloud group detected
+    quiet: true
+
 ...
