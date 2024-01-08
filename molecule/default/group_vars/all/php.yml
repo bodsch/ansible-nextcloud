@@ -1,13 +1,6 @@
 ---
 
-# php_version: "{{ '7' if ansible_os_family | lower != 'redhat' else '7.3' }}"
-# php_version: "{{ '8' if ansible_os_family | lower != 'redhat' else '8.1' }}"
 php_version: "8.2"
-
-# php_packages: "{{ [
-#   'php' + php_version + '-ldap',
-#   'php' + php_version + '-xmlrpc',
-#   'php' + php_version + '-curl'] if ansible_os_family | lower not in ['archlinux'] else [] }}"
 
 php_enable_php_fpm: true
 
@@ -92,15 +85,6 @@ php_modules:
     priority: 20
     content: |
       extension=curl
-  # disable (old) modules
-  - name: apcu
-    enabled: false
-    priority: 20
-    content: |
-      extension=apcu.so
-      apc.shm_size=96M
-      apc.enable_cli=0
-      apc.rfc1867=1
   - name: memcached
     enabled: false
     priority: 20
@@ -111,3 +95,13 @@ php_modules:
     priority: 20
     content: |
       extension=zip
+  # disable (old) modules
+  - name: apcu
+    enabled: false
+    priority: 20
+    content: |
+      extension=apcu.so
+      apc.shm_size=96M
+      apc.enable_cli=0
+      apc.rfc1867=1
+

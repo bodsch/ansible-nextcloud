@@ -8,6 +8,8 @@
 from __future__ import absolute_import, print_function
 import os
 import re
+import pwd
+import grp
 import shutil
 
 from ansible.module_utils.basic import AnsibleModule
@@ -64,10 +66,14 @@ class NextcloudClient(object):
                 msg = "missing occ"
             )
 
-        self.module.log(msg=f" command   : '{self.command}'")
-        self.module.log(msg=f" parameters: '{self.parameters}'")
+        # self.module.log(msg=f" command   : '{self.command}'")
+        # self.module.log(msg=f" parameters: '{self.parameters}'")
 
         os.chdir(self.working_dir)
+
+        if self.data_dir:
+            current_owner, current_group, current_mode = self.__file_state(self.data_dir)
+            self.module.log(f" {self.data_dir} : {current_owner}:{current_group} : {current_mode}")
 
         if self.command == "status":
             return self.occ_status()
@@ -78,7 +84,7 @@ class NextcloudClient(object):
         """
             sudo -u www-data php occ status
         """
-        self.module.log(msg="occ_status()")
+        # self.module.log(msg="occ_status()")
 
         version_string = None
 
@@ -88,7 +94,7 @@ class NextcloudClient(object):
         args.append("status")
         args.append("--no-ansi")
 
-        self.module.log(msg=f" args: '{args}'")
+        # self.module.log(msg=f" args: '{args}'")
 
         rc, out, err = self.__exec(args, check_rc=False)
 
@@ -107,7 +113,7 @@ class NextcloudClient(object):
             if exception:
                 err = exception.group("exception")
 
-        self.module.log(msg=f"  version     : {version_string}")
+        # self.module.log(msg=f"  version     : {version_string}")
 
         return (rc == 0, version_string, err)
 
@@ -124,13 +130,13 @@ class NextcloudClient(object):
                 --admin-user='admin'
                 --admin-pass='admin'
         """
-        self.module.log(msg="occ_maintenance_install()")
+        # self.module.log(msg="occ_maintenance_install()")
 
         _failed = True
         _changed = False
 
-        self.module.log(msg=f" database: '{self.database}'")
-        self.module.log(msg=f" admin   : '{self.admin}'")
+        # self.module.log(msg=f" database: '{self.database}'")
+        # self.module.log(msg=f" admin   : '{self.admin}'")
 
         dba_type = self.database.get("type", None)
         dba_hostname = self.database.get("hostname", None)
@@ -168,7 +174,7 @@ class NextcloudClient(object):
         args.append(admin_password)
         args.append("--no-ansi")
 
-        self.module.log(msg=f" args: '{args}'")
+        # self.module.log(msg=f" args: '{args}'")
 
         rc, out, err = self.__exec(args, check_rc=False)
 
@@ -187,13 +193,9 @@ class NextcloudClient(object):
             pattern = re.compile(r'.*Command "maintenance:install" is not defined.*', re.MULTILINE)
 
             for line in err.splitlines():
-                self.module.log(msg=f"  line     : {line}")
-
+                # self.module.log(msg=f"  line     : {line}")
                 for match in re.finditer(pattern, line):
                     result = re.search(pattern, line)
-
-                    self.module.log(msg=f"  result     : {result}")
-
                     if result:
                         self.module.log(msg=f"  result     : {result}")
                     # versions.append(result.group('version'))
@@ -242,16 +244,41 @@ class NextcloudClient(object):
             changed=False,
         )
 
+    def __file_state(self, file_name):
+        """
+        """
+        current_owner = None
+        current_group = None
+        current_mode = None
+
+        if os.path.exists(file_name):
+            _state = os.stat(file_name)
+            try:
+                current_owner = pwd.getpwuid(_state.st_uid).pw_uid
+            except KeyError:
+                pass
+
+            try:
+                current_group = grp.getgrgid(_state.st_gid).gr_gid
+            except KeyError:
+                pass
+
+            try:
+                current_mode = oct(_state.st_mode)[-4:]
+            except KeyError:
+                pass
+
+        return current_owner, current_group, current_mode
+
     def __exec(self, commands, check_rc=True):
         """
         """
         rc, out, err = self.module.run_command(commands, cwd=self.working_dir, check_rc=check_rc)
 
-        self.module.log(msg=f"  rc : '{rc}'")
-
+        # self.module.log(msg=f"  rc : '{rc}'")
         if rc != 0:
-            self.module.log(msg=f"  out: '{out}' ({type(out)})")
-            self.module.log(msg=f"  err: '{err}' ({type(err)})")
+            self.module.log(msg=f"  out: '{out}'")
+            self.module.log(msg=f"  err: '{err}'")
 
         return rc, out, err
 

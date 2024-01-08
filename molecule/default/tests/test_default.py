@@ -115,11 +115,12 @@ def test_directories(host, get_vars):
     dirs = [
         base_dir,
         f"{base_dir}/nextcloud-{version}",
-        f"{base_dir}/nextcloud/bin",
-        f"{base_dir}/nextcloud/config",
-        f"{base_dir}/nextcloud/vendor/",
-        f"{base_dir}/nextcloud/var/cache",
-        f"{base_dir}/nextcloud/var/cache/prod",
+        f"{base_dir}/server/apps",
+        f"{base_dir}/server/core",
+        f"{base_dir}/server/config",
+        f"{base_dir}/server/lib",
+        f"{base_dir}/server/themes",
+        f"{base_dir}/server/updater",
     ]
 
     # if 'latest' in install_dir:
@@ -135,12 +136,12 @@ def test_files(host, get_vars):
     base_dir = get_vars.get("nextcloud_install_base_directory")
 
     files = [
-        f"{base_dir}/nextcloud/bin/console",
-        f"{base_dir}/nextcloud/config/routes.yaml",
-        f"{base_dir}/nextcloud/config/services.yaml",
-        f"{base_dir}/nextcloud/config/preload.php",
-        f"{base_dir}/nextcloud/vendor/autoload.php",
-        f"{base_dir}/nextcloud/var/cache/prod/App_KernelProdContainer.php",
+        f"{base_dir}/server/occ",
+        f"{base_dir}/server/config/config.php",
+        f"{base_dir}/server/config/ansible.json",
+        f"{base_dir}/server/config/config.json",
+        f"{base_dir}/server/core/register_command.php",
+        f"{base_dir}/server/core/signature.json",
     ]
 
     for _file in files:
@@ -152,7 +153,7 @@ def test_links(host, get_vars):
 
     base_dir = get_vars.get("nextcloud_install_base_directory")
 
-    install_dir = f"{base_dir}/nextcloud"
+    install_dir = f"{base_dir}/server"
 
     f = host.file(install_dir)
     assert f.is_symlink

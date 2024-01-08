@@ -42,7 +42,7 @@ class NextcloudClient(object):
         # self._occ = module.get_bin_path('console', False)
 
         self.working_dir = module.params.get("working_dir")
-        self.data_dir = module.params.get("data_dir")
+        # self.data_dir = module.params.get("data_dir")
         self.owner = module.params.get("owner")
         self.group = module.params.get("group")
         self.config_parameters = module.params.get("config_parameters")
@@ -91,7 +91,7 @@ class NextcloudClient(object):
         self.module.log(msg=f" config opts   : '{data}'")
 
         create_directory(directory=self.tmp_directory, mode="0750")
-        tmp_file     = os.path.join(self.tmp_directory, "ansible.json")
+        tmp_file = os.path.join(self.tmp_directory, "ansible.json")
 
         self.__write_config(tmp_file, data)
 
@@ -106,6 +106,10 @@ class NextcloudClient(object):
         # self.module.log(f" changed       : {changed}")
         # self.module.log(f" new_checksum  : {new_checksum}")
         # self.module.log(f" old_checksum  : {old_checksum}")
+
+        # if self.data_dir:
+        #     current_owner, current_group, current_mode = self.__file_state(self.data_dir)
+        #     self.module.log(f" {self.data_dir} : {current_owner}:{current_mode} : {current_mode}")
 
         if changed:
             new_file = (old_checksum is None)
@@ -147,7 +151,8 @@ class NextcloudClient(object):
 
                 return dict(
                     failed = True,
-                    msg = msg
+                    msg = msg,
+                    diff = _diff
                 )
 
             else:
@@ -162,7 +167,7 @@ class NextcloudClient(object):
 
         uid, gid = self.module.user_and_group(self.nc_config_file)
 
-        self.module.log(f" uid {uid} / gid {gid}")
+        # self.module.log(f" uid {uid} / gid {gid}")
 
         self.__fix_ownership(self.nc_config_file, self.owner, self.group, "0666")
 
@@ -187,7 +192,7 @@ class NextcloudClient(object):
         if self.config_parameters:
             parameters = self.config_parameters
 
-            self.module.log(f" parameters       : {parameters}")
+            # self.module.log(f" parameters       : {parameters}")
 
             language = parameters.get("language")
 
@@ -827,10 +832,10 @@ def main():
             required=True,
             type=str
         ),
-        data_dir=dict(
-            required=False,
-            type=str
-        ),
+        # data_dir=dict(
+        #     required=False,
+        #     type=str
+        # ),
         owner = dict(
             required=False,
             type=str,

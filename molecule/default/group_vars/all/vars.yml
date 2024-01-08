@@ -22,10 +22,10 @@ nextcloud_password_salt: cpkxiYp1+qP2YQBGHBz+Tyxq5hzK3D
 nextcloud_secret: '0Yvgwz56NtIYLL1t6+5DhUuUA1HZCbl7ojaLLOQQMZN4kYM3'
 
 nextcloud_defaults:
-  language:
-    default: de
-  locale:
-    default: de_DE
+  # language:
+  #   default: de
+  # locale:
+  #   default: de_DE
   phone_region: DE
 
   data_directory: "/var/www/nc_data"
