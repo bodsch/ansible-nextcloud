@@ -128,6 +128,13 @@
     - nextcloud_background_jobs.type | string == "systemd"
   block:
 
+    - name: detect old cron file
+      ansible.builtin.stat:
+        path: "/etc/cron.d/nextcloud-background-jobs"
+        get_checksum: false
+        get_attributes: false
+      register: nextcloud_background_cron
+
     - name: remove cron job for background jobs
       ansible.builtin.cron:
         name: nextcloud background jobs
@@ -135,6 +142,9 @@
         user: "{{ nextcloud_owner }}"
         cron_file: nextcloud-background-jobs
         state: absent
+      when:
+        - nextcloud_background_cron.stat is defined
+        - nextcloud_background_cron.stat.exists | default('false')
 
     - name: create systemd unit file
       ansible.builtin.template:
