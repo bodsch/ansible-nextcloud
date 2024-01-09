@@ -15,8 +15,6 @@ nextcloud_admin:
   username: admin
   password: admin
 
-# ----
-
 nextcloud_instande_id: ""
 nextcloud_password_salt: ""
 nextcloud_data_directory: ""

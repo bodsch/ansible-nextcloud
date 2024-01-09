@@ -79,6 +79,8 @@ class NextcloudClient(object):
             return self.occ_status()
         elif self.command == "maintenance:install":
             return self.occ_maintenance_install()
+        elif self.command.startswith("background"):
+            return self.occ_background_job()
 
     def occ_status(self):
         """
@@ -247,6 +249,32 @@ class NextcloudClient(object):
             changed=False,
         )
 
+    def occ_background_job(self):
+        """
+            https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/occ_command.html#background-jobs-selector
+        """
+        args = []
+        args += self.occ_base_args
+
+        _, crontype = self.state.split(":")
+
+        if crontype in ["ajax", "cron", "webcron"]:
+            args.append(f"background:{self.state}")
+            args.append("--no-ansi")
+
+            self.module.log(msg=f" args: '{args}'")
+
+            rc, out, err = self.__exec(args, check_rc=False)
+
+            # if rc == 0:
+
+        else:
+            rc = 1
+            out = ""
+            err = ""
+
+        return (rc == 0, out, err)
+
     def __file_state(self, file_name):
         """
         """
@@ -295,12 +323,17 @@ def main():
             choices=[
                 "maintenance:install",
                 "status",
+                "background_job"
             ]
         ),
         parameters=dict(
             required=False,
             type=list,
             default=[]
+        ),
+        type=dict(
+            required=True,
+            type=str
         ),
         working_dir=dict(
             required=True,
