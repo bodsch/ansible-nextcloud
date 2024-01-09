@@ -8,8 +8,8 @@ nextcloud_release: {}
 
 nextcloud_install_base_directory: /var/www
 
-nextcloud_owner: "" # www-data
-nextcloud_group: "" # www-data
+nextcloud_owner: ""
+nextcloud_group: ""
 
 nextcloud_admin:
   username: admin
@@ -51,10 +51,12 @@ nextcloud_php_daemon:
   name: "{{ php_fpm_daemon }}"
 
 nextcloud_background_jobs:
-  type: cron # alternative and currently not supported: webcron | ajax
+  type: cron          # alternative and currently not supported: webcron | ajax , maybe systemd
+  daemon: ""          # "{{ 'cron' if ansible_os_family | lower == 'debian' else 'cronie' }}"
+  state: enabled      # ['enabled', 'disabled']
   cron:
     minute: ""
     hour: ""
-    day: ""
+    weekday: ""
 
 ...

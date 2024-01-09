@@ -14,7 +14,7 @@
 - name: create remote nextcloud directories
   ansible.builtin.file:
     state: directory
-    mode: 0770
+    mode: "0770"
     group: "{{ nextcloud_group }}"
     path: "{{ item }}"
   loop: "{{ nextcloud_directories }}"
@@ -23,6 +23,10 @@
   when:
     - nextcloud_directories is defined
     - nextcloud_directories | count > 0
+
+- name: append database package
+  ansible.builtin.set_fact:
+    nextcloud_database_dependencies: "{{ nextcloud_database | default({}) | nc_database_driver(nextcloud_php_packages) }}"
 
 - name: append php redis packages while redis host are defined
   ansible.builtin.set_fact:
@@ -40,10 +44,9 @@
 
 - name: install dependencies
   ansible.builtin.package:
-    name: "{{ nextcloud_dependencies }}"
+    name: "{{ nextcloud_dependencies + nextcloud_database_dependencies }}"
     state: present
 
-# get file or directory stats
 - name: detect installed nextcloud
   ansible.builtin.stat:
     path: "{{ nextcloud_install_base_directory }}/nextcloud-{{ nextcloud_version }}/lib/versioncheck.php"
@@ -57,7 +60,6 @@
   ansible.builtin.stat:
     path: "{{ nextcloud_install_base_directory }}/server"
     get_checksum: false
-    # get_mime: false
     get_attributes: false
   register: __stat_share_nextcloud
 
@@ -78,7 +80,7 @@
       ansible.builtin.file:
         path: "{{ nextcloud_remote_tmp_directory }}"
         state: directory
-        mode: 0755
+        mode: "0755"
       when:
         - not nextcloud_direct_download
 
@@ -86,7 +88,7 @@
       ansible.builtin.copy:
         src: "{{ nextcloud_local_tmp_directory }}/{{ nextcloud_release.file }}"
         dest: "{{ nextcloud_remote_tmp_directory }}/"
-        mode: 0700
+        mode: "0700"
 
     - name: create remote install directory
       ansible.builtin.file:
@@ -94,7 +96,7 @@
         path: "{{ nextcloud_install_base_directory }}/nextcloud-{{ nextcloud_version }}"
         owner: "{{ nextcloud_owner }}"
         group: "{{ nextcloud_group }}"
-        mode: 0755
+        mode: "0755"
 
     - name: extract nextcloud archive
       ansible.builtin.unarchive:
@@ -102,7 +104,7 @@
         dest: "{{ nextcloud_install_base_directory }}/nextcloud-{{ nextcloud_version }}/"
         owner: "{{ nextcloud_owner }}"
         group: "{{ nextcloud_group }}"
-        mode: 0755
+        mode: "0755"
         remote_src: true
         extra_opts:
           - --strip-components=1
@@ -137,7 +139,7 @@
     dest: '{{ nextcloud_install_base_directory }}/server'
     owner: "{{ nextcloud_owner }}"
     group: "{{ nextcloud_group }}"
-    mode: 0755
+    mode: "0755"
     state: link
     force: true
   notify:

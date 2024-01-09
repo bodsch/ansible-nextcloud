@@ -170,8 +170,8 @@ class NextcloudClient(object):
             args.append(dba_username)
             args.append("--database-pass")
             args.append(dba_password)
-            args.append("--admin-user")
 
+        args.append("--admin-user")
         args.append(admin_username)
         args.append("--admin-pass")
         args.append(admin_password)

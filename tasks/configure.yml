@@ -44,7 +44,7 @@
       password: "{{ nextcloud_admin.password | default('admin') }}"
   register: nc_status
 
-- name: installation state
+- name: installation state  # noqa no-handler
   ansible.builtin.debug:
     msg: "{{ nc_status }}"
   when:
@@ -91,10 +91,71 @@
       password: "{{ nextcloud_database.password | default(omit) }}"
   register: nc_config
 
-- name: configuration state
+- name: configuration state  # noqa no-handler
   ansible.builtin.debug:
     msg: "{{ nc_config }}"
   when:
     - nc_config.changed
+
+- name: create background cron job
+  when:
+    - nextcloud_background_jobs.state | default('disabled') == "enabled"
+    - nextcloud_background_jobs.daemon | default('') | string | length > 0
+    - nextcloud_background_jobs.type is defined
+    - nextcloud_background_jobs.type | string == "cron"
+  block:
+
+    - name: ensure cron daemon is installed
+      ansible.builtin.package:
+        name: "{{ nextcloud_background_jobs.daemon }}"
+        state: present
+
+    - name: create cron job for background jobs
+      ansible.builtin.cron:
+        name: nextcloud background jobs
+        job: "[ -e {{ nextcloud_install_base_directory }}/server/cron.php ] && php -f {{ nextcloud_install_base_directory }}/server/cron.php 2> /dev/null"
+        minute: "{{ nextcloud_background_jobs.cron.minute | default('*/5') }}"
+        hour: "{{ nextcloud_background_jobs.cron.hour | default('*') }}"
+        weekday: "{{ nextcloud_background_jobs.cron.weekday | default('*') }}"
+        user: "{{ nextcloud_owner }}"
+        cron_file: nextcloud-background-jobs
+        state: present
+
+- name: create background systemd job
+  when:
+    - nextcloud_background_jobs.state | default('disabled') == "enabled"
+    - nextcloud_background_jobs.type is defined
+    - nextcloud_background_jobs.type | string == "systemd"
+  block:
+
+    - name: remove cron job for background jobs
+      ansible.builtin.cron:
+        name: nextcloud background jobs
+        job: "[ -e {{ nextcloud_install_base_directory }}/server/cron.php ] && php -f {{ nextcloud_install_base_directory }}/server/cron.php 2> /dev/null"
+        user: "{{ nextcloud_owner }}"
+        cron_file: nextcloud-background-jobs
+        state: absent
+
+    - name: create systemd unit file
+      ansible.builtin.template:
+        src: etc/init/systemd/nextcloud-cron.service.j2
+        dest: "{{ systemd_lib_directory }}/nextcloud-cron.service"
+        mode: "0644"
+      notify:
+        - daemon reload
+
+    - name: create systemd timer file
+      ansible.builtin.template:
+        src: etc/init/systemd/nextcloud-cron.timer.j2
+        dest: "{{ systemd_lib_directory }}/nextcloud-cron.timer"
+        mode: "0644"
+      notify:
+        - daemon reload
+
+    - name: enable nextcloud background timer
+      ansible.builtin.service:
+        name: nextcloud-cron.timer
+        enabled: true
+        state: started
 
 ...

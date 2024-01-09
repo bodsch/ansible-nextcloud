@@ -1,0 +1,9 @@
+---
+
+- name: converge
+  hosts: instance
+  gather_facts: true
+  any_errors_fatal: true
+
+  roles:
+    - role: ansible-nextcloud

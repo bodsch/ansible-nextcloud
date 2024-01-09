@@ -17,8 +17,8 @@ class FilterModule(object):
         return {
             'directories': self.directories,
             'nc_directories': self.directories,
-            'nc_configured_redis': self.configured_redis,
             'nc_configured_cache': self.configured_cache,
+            'nc_database_driver': self.configured_database,
         }
 
     def directories(self, data):
@@ -48,18 +48,10 @@ class FilterModule(object):
         dirs = [dirs for keys, dirs in data.items() if keys in _directory_list]
         dirs += [os.path.dirname(dirs) for keys, values in data.items() if keys in ["logging"] for k, dirs in values.items() if k in ["file"]]
 
+        dirs = list(set(dirs))
         display.v(f"= return : {dirs}")
 
         return dirs
-
-    def configured_redis(self, data):
-        """
-        """
-        display.v(f"- data : {data}")
-
-        result = [x for x in data if x.get("host", None)]
-
-        return result
 
     def configured_cache(self, data, cache="redis"):
         """
@@ -77,3 +69,15 @@ class FilterModule(object):
         display.v(f"- result : {result}")
 
         return result
+
+    def configured_database(self, data, packages):
+        """
+        """
+        display.v(f"configured_database({data}, {packages})")
+
+        database_type = data.get('type')
+        package = packages.get(database_type, [])
+
+        display.v(f"- result : {package}")
+
+        return package
