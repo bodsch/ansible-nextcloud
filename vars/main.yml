@@ -29,6 +29,7 @@ nextcloud_dependencies:
   - php{{ php_version }}-intl
   - php{{ php_version }}-gd
   - php{{ php_version }}-mysql
+  - php{{ php_version }}-sqlite3
 
 nextcloud_php_packages:
   redis:
@@ -48,29 +49,29 @@ nextcloud_python_build_packages:
 
 nextcloud_packages: []
 
-nextcloud_defaults_database:
-  type: sqlite3
-  username: ""
-  password: ""
-  hostname: ""
-  port: ""
-  schema: nextcloud
-  tableprefix: oc_
-  persistent: true
-
-  dbdriveroptions:
-    - "PDO::MYSQL_ATTR_SSL_CA": '/file/path/to/ca_cert.pem'
-    - "PDO::MYSQL_ATTR_SSL_KEY": '/file/path/to/mysql-client-key.pem'
-    - "PDO::MYSQL_ATTR_SSL_CERT": '/file/path/to/mysql-client-cert.pem'
-    - "PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT": false
-    - "PDO::MYSQL_ATTR_INIT_COMMAND": 'SET wait_timeout = 28800'
-
-  sqlite:
-    journal_mode: 'DELETE'
-
-  mysql:
-    utf8mb4: false
-    collation: ""
+nextcloud_defaults_database:                                                   #
+  type: sqlite3                                                                #
+  username: ""                                                                 #
+  password: ""                                                                 #
+  hostname: ""                                                                 #
+  port: ""                                                                     #
+  schema: nextcloud                                                            #
+  tableprefix: oc_                                                             #
+  persistent: true                                                             #
+                                                                               #
+  dbdriveroptions:                                                             #
+    - "PDO::MYSQL_ATTR_SSL_CA": '/file/path/to/ca_cert.pem'                    #
+    - "PDO::MYSQL_ATTR_SSL_KEY": '/file/path/to/mysql-client-key.pem'          #
+    - "PDO::MYSQL_ATTR_SSL_CERT": '/file/path/to/mysql-client-cert.pem'        #
+    - "PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT": false                          #
+    - "PDO::MYSQL_ATTR_INIT_COMMAND": 'SET wait_timeout = 28800'               #
+                                                                               #
+  sqlite:                                                                      #
+    journal_mode: 'DELETE'                                                     #
+                                                                               #
+  mysql:                                                                       #
+    utf8mb4: false                                                             #
+    collation: ""                                                              #
 
 nextcloud_defaults_defaults:
   language:

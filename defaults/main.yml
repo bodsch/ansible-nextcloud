@@ -33,18 +33,18 @@ nextcloud_database:
   # schema: nextcloud
   persistent: false
 
-nextcloud_defaults:
-  language:
-    default: en
-    # force: en
-  locale:
-    default: en_GB
-    # force: en_GB
-  phone_region: DE
-  apps:
-    - dashboard
-    - files
-  knowledgebase_enabled: true
+nextcloud_defaults: {}
+  # language:
+  #   default: en
+  #   # force: en
+  # locale:
+  #   default: en_GB
+  #   # force: en_GB
+  # phone_region: DE
+  # defaultapps:
+  #   - dashboard
+  #   - files
+  # knowledgebase_enabled: true
 
 nextcloud_php_daemon:
   restart: true

@@ -44,15 +44,17 @@
       password: "{{ nextcloud_admin.password | default('admin') }}"
   register: nc_status
 
-# - name: d
-#   ansible.builtin.debug:
-#     msg: "{{ nc_status }}"
-#   when:
-#     - nc_status.changed
+- name: installation state
+  ansible.builtin.debug:
+    msg: "{{ nc_status }}"
+  when:
+    - nc_status.changed
 
 - name: custom data directory
-  #when:
-  #  - nc_status.changed
+  when:
+    - nc_status.changed
+    - nextcloud_defaults.data_directory is defined
+    - nextcloud_defaults.data_directory | string | length > 0
   block:
     - name: sync {{ nextcloud_install_base_directory }}/server/data to {{ nextcloud_defaults.data_directory }}
       bodsch.core.sync_directory:
@@ -89,7 +91,7 @@
       password: "{{ nextcloud_database.password | default(omit) }}"
   register: nc_config
 
-- name: d
+- name: configuration state
   ansible.builtin.debug:
     msg: "{{ nc_config }}"
   when:

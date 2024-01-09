@@ -1,27 +1,8 @@
 ---
 
-- name: snapd
-  src: bodsch.snapd
-  version: 1.2.2
-
-- name: apparmor
-  src: bodsch.apparmor
-  version: 1.0.3
-
 - name: php-fpm
-  src: https://github.com/bodsch/ansible-php
-  scm: git
+  src: bodsch.php
   # version: 2.2.0
-
-- name: mariadb
-  src: https://github.com/bodsch/ansible-mariadb
-  scm: git
-  # version: 2.4.0
-
-- name: nginx
-  src: https://github.com/bodsch/ansible-nginx
-  scm: git
-  # version: 0.21.1
 
 - name: composer
   src: geerlingguy.composer

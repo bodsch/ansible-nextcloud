@@ -508,6 +508,8 @@ class NextcloudClient(object):
 
             apps = parameters.get("apps")
 
+            self.module.log(f" apps       : {apps}")
+
             if apps:
                 if apps.get("store", {}).get("enabled", None):
                     data["system"]['appstoreenabled'] = apps.get("store", {}).get("enabled", None)
@@ -611,27 +613,27 @@ class NextcloudClient(object):
                 if parameters.get("mysql", {}).get("collation", None):
                     data["system"]['mysql.collation'] = parameters.get("mysql", {}).get("collation", None)
 
+                if parameters.get("username", None):
+                    data["system"]['dbuser'] = parameters.get("username", None)
+
+                if parameters.get("password", None):
+                    data["system"]['dbpassword'] = parameters.get("password", None)
+
+                if parameters.get("hostname", None):
+                    data["system"]['dbhost'] = parameters.get("hostname", None)
+
+                if parameters.get("port", None):
+                    data["system"]['dbport'] = parameters.get("port", None)
+
+                if parameters.get("schema", None):
+                    data["system"]['dbname'] = parameters.get("schema", None)
+
+                if parameters.get("tableprefix", None):
+                    data["system"]['dbtableprefix'] = parameters.get("tableprefix", None)
+
             if parameters.get("type", None) == "sqlite3":
                 if parameters.get("sqlite", {}).get("journal_mode", None):
                     data["system"]['sqlite.journal_mode'] = parameters.get("sqlite", {}).get("journal_mode", None)
-
-            if parameters.get("username", None):
-                data["system"]['dbuser'] = parameters.get("username", None)
-
-            if parameters.get("password", None):
-                data["system"]['dbpassword'] = parameters.get("password", None)
-
-            if parameters.get("hostname", None):
-                data["system"]['dbhost'] = parameters.get("hostname", None)
-
-            if parameters.get("port", None):
-                data["system"]['dbport'] = parameters.get("port", None)
-
-            if parameters.get("schema", None):
-                data["system"]['dbname'] = parameters.get("schema", None)
-
-            if parameters.get("tableprefix", None):
-                data["system"]['dbtableprefix'] = parameters.get("tableprefix", None)
 
         """
 

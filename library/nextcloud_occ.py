@@ -158,23 +158,26 @@ class NextcloudClient(object):
 
         args.append("--database")
         args.append(dba_type)
-        args.append("--database-host")
-        args.append(dba_hostname)
-        args.append("--database-port")
-        args.append(dba_port)
-        args.append("--database-name")
-        args.append(dba_schema)
-        args.append("--database-user")
-        args.append(dba_username)
-        args.append("--database-pass")
-        args.append(dba_password)
-        args.append("--admin-user")
+
+        if dba_type == "mysql":
+            args.append("--database-host")
+            args.append(dba_hostname)
+            args.append("--database-port")
+            args.append(dba_port)
+            args.append("--database-name")
+            args.append(dba_schema)
+            args.append("--database-user")
+            args.append(dba_username)
+            args.append("--database-pass")
+            args.append(dba_password)
+            args.append("--admin-user")
+
         args.append(admin_username)
         args.append("--admin-pass")
         args.append(admin_password)
         args.append("--no-ansi")
 
-        # self.module.log(msg=f" args: '{args}'")
+        self.module.log(msg=f" args: '{args}'")
 
         rc, out, err = self.__exec(args, check_rc=False)
 

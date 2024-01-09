@@ -139,7 +139,7 @@ def test_files(host, get_vars):
         f"{base_dir}/server/occ",
         f"{base_dir}/server/config/config.php",
         f"{base_dir}/server/config/ansible.json",
-        f"{base_dir}/server/config/config.json",
+        # f"{base_dir}/server/config/config.json",
         f"{base_dir}/server/core/register_command.php",
         f"{base_dir}/server/core/signature.json",
     ]
