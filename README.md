@@ -124,14 +124,20 @@ nextcloud_defaults:
 
 To create the Background Job.
 
-| Variable | default | Description |
-| : --- | :---- | :---- |
+| Variable       | default    | Description |
+| : ---          | :----      | :----       |
+| `type`         | `webcron`  | alternative and currently not supported: `webcron`, `ajax`. systemd User can create an system timer with `systemd` insteed `cron` |
+| `daemon`       | ` `        | the named cron package (Will be installed) |
+| `enabled`      | `false`    | enable cron Background Jobs.            |
+| `cron.minute`  |            |             |
+| `cron.hour`    |            |             |
+| `cron.weekday` |            |             |
 
 ```yaml
 nextcloud_background_jobs:
   type: cron          # alternative and currently not supported: webcron | ajax , maybe systemd
   daemon: ""          # "{{ 'cron' if ansible_os_family | lower == 'debian' else 'cronie' }}"
-  state: enabled      # ['enabled', 'disabled']
+  enabled: false      # ['true', 'false']
   cron:
     minute: ""
     hour: ""
