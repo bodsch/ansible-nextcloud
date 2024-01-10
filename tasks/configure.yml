@@ -105,8 +105,7 @@
   block:
     - name: configure nextcloud background jobs
       nextcloud_occ:
-        command: "background_job"
-        type: "{{ 'cron' if nextcloud_background_jobs.type == 'systemd' else nextcloud_background_jobs.type }}"
+        command: "background:{{ 'cron' if nextcloud_background_jobs.type == 'systemd' else nextcloud_background_jobs.type }}"
         owner: "{{ nextcloud_owner }}"
         working_dir: "{{ nextcloud_install_base_directory }}/server"
       register: nc_status

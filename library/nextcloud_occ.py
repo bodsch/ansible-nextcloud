@@ -80,7 +80,10 @@ class NextcloudClient(object):
         elif self.command == "maintenance:install":
             return self.occ_maintenance_install()
         elif self.command.startswith("background"):
-            return self.occ_background_job()
+            _, crontype = self.command.split(":")
+
+            if crontype in ["ajax", "cron", "webcron"]:
+                return self.occ_background_job(crontype)
 
     def occ_status(self):
         """
@@ -249,31 +252,22 @@ class NextcloudClient(object):
             changed=False,
         )
 
-    def occ_background_job(self):
+    def occ_background_job(self, crontype):
         """
             https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/occ_command.html#background-jobs-selector
         """
         args = []
         args += self.occ_base_args
 
-        _, crontype = self.state.split(":")
+        args.append(f"background:{crontype}")
+        args.append("--no-ansi")
 
-        if crontype in ["ajax", "cron", "webcron"]:
-            args.append(f"background:{self.state}")
-            args.append("--no-ansi")
+        rc, out, err = self.__exec(args, check_rc=False)
 
-            self.module.log(msg=f" args: '{args}'")
-
-            rc, out, err = self.__exec(args, check_rc=False)
-
-            # if rc == 0:
-
-        else:
-            rc = 1
-            out = ""
-            err = ""
-
-        return (rc == 0, out, err)
+        return dict(
+            failed=not (rc == 0),
+            msg=out.strip()
+        )
 
     def __file_state(self, file_name):
         """
@@ -323,17 +317,15 @@ def main():
             choices=[
                 "maintenance:install",
                 "status",
-                "background_job"
+                "background:ajax",
+                "background:cron",
+                "background:webcron"
             ]
         ),
         parameters=dict(
             required=False,
             type=list,
             default=[]
-        ),
-        type=dict(
-            required=True,
-            type=str
         ),
         working_dir=dict(
             required=True,
