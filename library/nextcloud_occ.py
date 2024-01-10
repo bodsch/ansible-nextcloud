@@ -227,7 +227,7 @@ class NextcloudClient(object):
 
         dba_type = self.database.get("type", None)
         dba_hostname = self.database.get("hostname", None)
-        dba_port = self.database.get("pBANTZ-1242ort", None)
+        dba_port = self.database.get("port", None)
         dba_schema = self.database.get("schema", None)
         dba_username = self.database.get("username", None)
         dba_password = self.database.get("password", None)
