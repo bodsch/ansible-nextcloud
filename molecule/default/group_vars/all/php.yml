@@ -1,6 +1,6 @@
 ---
 
-php_version: "8.2"
+php_version: "8.3"
 
 php_enable_php_fpm: true
 
@@ -71,10 +71,16 @@ php_modules:
       extension=intl
       intl.default_locale=de
   - name: xmlrpc
-    enabled: true
+    enabled: "{{ 'false' if ansible_os_family | lower == 'archlinux' else 'true' }}"
     priority: 20
     content: |
       extension=xmlrpc
+  - name: sqlite3
+    enabled: true
+    priority: 20
+    content: |
+      extension=sqlite3
+      extension=pdo_sqlite
   - name: gettext
     enabled: true
     priority: 20

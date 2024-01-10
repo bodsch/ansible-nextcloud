@@ -26,6 +26,19 @@
         owner: "{{ nextcloud_owner }}"
         group: "{{ nextcloud_group }}"
 
+# - name: check nextcloud for installation
+#   nextcloud_occ:
+#     command: "check"
+#     owner: "{{ nextcloud_owner }}"
+#     working_dir: "{{ nextcloud_install_base_directory }}/server"
+#   register: nc_status
+#
+# - name: installation state  # noqa no-handler
+#   ansible.builtin.debug:
+#     msg: "{{ nc_status.msg }}"
+#   when:
+#     - nc_status.failed
+
 - name: install nextcloud with base configuration
   nextcloud_occ:
     command: "maintenance:install"
@@ -100,8 +113,7 @@
 - name: remove background cron job
   when:
     - not nextcloud_background_jobs.enabled | default('false') | bool
-    - nextcloud_background_jobs.type is defined
-    - nextcloud_background_jobs.type | string | lower in ["cron", "ajax", "webcron", "systemd"]
+    - nextcloud_background_jobs.type | default('webcron') | string | lower in ["cron", "ajax", "webcron", "systemd"]
   block:
     - name: configure nextcloud background jobs
       nextcloud_occ:
@@ -110,18 +122,10 @@
         working_dir: "{{ nextcloud_install_base_directory }}/server"
       register: nc_status
 
-    - name: remove cron file
+    - name: remove cron jobs
       when:
         - not nextcloud_background_jobs.type | string == "cron"
       block:
-
-        - name: detect old cron file
-          ansible.builtin.stat:
-            path: "/etc/cron.d/nextcloud-background-jobs"
-            get_checksum: false
-            get_attributes: false
-          register: nextcloud_background_cron
-
         - name: remove cron job for background jobs
           ansible.builtin.cron:
             name: nextcloud background jobs
@@ -129,21 +133,19 @@
             user: "{{ nextcloud_owner }}"
             cron_file: nextcloud-background-jobs
             state: absent
-          when:
-            - nextcloud_background_cron.stat is defined
-            - nextcloud_background_cron.stat.exists | default('false')
+          failed_when: false
 
         - name: disable systemd timer
           ansible.builtin.service:
             name: nextcloud-cron.timer
             enabled: false
             state: stopped
+          failed_when: false
 
 - name: create background cron job
   when:
     - nextcloud_background_jobs.enabled | default('false') | bool
-    - nextcloud_background_jobs.type is defined
-    - nextcloud_background_jobs.type | string | lower in ["cron", "ajax", "webcron", "systemd"]
+    - nextcloud_background_jobs.type | default('webcron') |  string | lower in ["cron", "ajax", "webcron", "systemd"]
   block:
     - name: configure nextcloud background jobs
       nextcloud_occ:
@@ -157,12 +159,12 @@
         - not nextcloud_background_jobs.type | string == "cron"
       block:
 
-        - name: detect old cron file
-          ansible.builtin.stat:
-            path: "/etc/cron.d/nextcloud-background-jobs"
-            get_checksum: false
-            get_attributes: false
-          register: nextcloud_background_cron
+        # - name: detect old cron file
+        #   ansible.builtin.stat:
+        #     path: "/etc/cron.d/nextcloud-background-jobs"
+        #     get_checksum: false
+        #     get_attributes: false
+        #   register: nextcloud_background_cron
 
         - name: remove cron job for background jobs
           ansible.builtin.cron:
@@ -171,20 +173,29 @@
             user: "{{ nextcloud_owner }}"
             cron_file: nextcloud-background-jobs
             state: absent
-          when:
-            - nextcloud_background_cron.stat is defined
-            - nextcloud_background_cron.stat.exists | default('false')
+          failed_when: false
+          # when:
+          #   - nextcloud_background_cron.stat is defined
+          #   - nextcloud_background_cron.stat.exists | default('false')
 
     - name: remove system unit file
       when:
         - not nextcloud_background_jobs.type | string == "systemd"
       block:
 
-        - name: enable nextcloud background timer
+        # - name: detect old systemd timer file
+        #   ansible.builtin.stat:
+        #     path: "{{ systemd_lib_directory }}/nextcloud-cron.timer"
+        #     get_checksum: false
+        #     get_attributes: false
+        #   register: nextcloud_background_timer
+
+        - name: disable nextcloud background timer
           ansible.builtin.service:
             name: nextcloud-cron.timer
             enabled: false
             state: stopped
+          failed_when: false
 
     - name: cron daemon
       when:

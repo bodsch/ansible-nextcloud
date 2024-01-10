@@ -1,6 +1,6 @@
 ---
 
-nextcloud_version: 26.0.5
+nextcloud_version: 28.0.0
 
 nextcloud_direct_download: false
 

@@ -81,6 +81,19 @@ class NextcloudClient(object):
                 msg = "missing occ"
             )
 
+        rc, installed, out, err = self.occ_check()
+
+        self.module.log(msg=f" rc : '{rc}'")
+        self.module.log(msg=f" out: '{out.strip()}'")
+        self.module.log(msg=f" err: '{err.strip()}'")
+
+        if not installed and rc == 1:
+            return dict(
+                failed=False,
+                changed=False,
+                msg=out
+            )
+
         checksum = Checksum(self.module)
         _diff = []
 
@@ -88,7 +101,7 @@ class NextcloudClient(object):
 
         data = self.config_opts()
 
-        self.module.log(msg=f" config opts   : '{data}'")
+        # self.module.log(msg=f" config opts   : '{data}'")
 
         create_directory(directory=self.tmp_directory, mode="0750")
         tmp_file = os.path.join(self.tmp_directory, "ansible.json")
@@ -147,7 +160,7 @@ class NextcloudClient(object):
                         os.remove(_config_backup)
 
                 msg = "The configuration holds an fatal error."
-                msg += err
+                msg += f" {err}"
 
                 return dict(
                     failed = True,
@@ -159,7 +172,7 @@ class NextcloudClient(object):
                 msg = "The configuration has been successfully updated."
 
                 if os.path.exists(_config_backup):
-                    self.module.log(f" remove config backup {_config_backup}")
+                    # self.module.log(f" remove config backup {_config_backup}")
                     os.remove(_config_backup)
 
         if new_file:
@@ -508,7 +521,7 @@ class NextcloudClient(object):
 
             apps = parameters.get("apps")
 
-            self.module.log(f" apps       : {apps}")
+            # self.module.log(f" apps       : {apps}")
 
             if apps:
                 if apps.get("store", {}).get("enabled", None):
@@ -655,6 +668,58 @@ class NextcloudClient(object):
 
         return diff_side_by_side
 
+    def occ_check(self):
+        """
+            sudo -u www-data php occ check
+        """
+        # self.module.log(msg="occ_check()")
+
+        installed = False
+
+        args = []
+        args += self.occ_base_args
+
+        args.append("check")
+        args.append("--no-ansi")
+
+        # self.module.log(msg=f" args: '{args}'")
+
+        rc, out, err = self.__exec(args, check_rc=False)
+
+        """
+            not installed: "Nextcloud is not installed - only a limited number of commands are available"
+            installed: ''
+        """
+        # self.module.log(msg=f" rc : '{rc}'")
+        # self.module.log(msg=f" out: '{out.strip()}'")
+        # self.module.log(msg=f" err: '{err.strip()}'")
+
+        if rc == 0:
+            pattern = re.compile(r"Nextcloud is not installed.*", re.MULTILINE)
+            # installed_out = re.search(pattern_1, out)
+            is_installed = re.search(pattern, err)
+
+            # self.module.log(msg=f" out: '{installed_out}'")
+            # self.module.log(msg=f" err: '{is_installed}' {type(is_installed)}")
+
+            if is_installed:
+                installed = False
+            else:
+                installed = True
+
+        else:
+            err = out.strip()
+
+            pattern = re.compile(r"An unhandled exception has been thrown:\n(?P<exception>.*)\n.*", re.MULTILINE)
+            exception = re.search(pattern, err)
+
+            if exception:
+                err = exception.group("exception")
+
+        self.module.log(msg=f"{rc} '{installed}' '{out}' '{err}'")
+
+        return (rc, installed, out, err)
+
     def occ_status(self):
         """
             sudo -u www-data php occ status
@@ -667,7 +732,7 @@ class NextcloudClient(object):
         args.append("status")
         args.append("--no-ansi")
 
-        self.module.log(msg=f" args: '{args}'")
+        # self.module.log(msg=f" args: '{args}'")
 
         rc, out, err = self.__exec(args, check_rc=False)
 
@@ -693,7 +758,7 @@ class NextcloudClient(object):
         args.append(config_file)
         args.append("--no-ansi")
 
-        self.module.log(msg=f" args: '{args}'")
+        # self.module.log(msg=f" args: '{args}'")
 
         rc, out, err = self.__exec(args, check_rc=False)
 
@@ -727,11 +792,11 @@ class NextcloudClient(object):
         """
         rc, out, err = self.module.run_command(commands, cwd=self.working_dir, check_rc=check_rc)
 
-        self.module.log(msg=f"  rc : '{rc}'")
-
+        # self.module.log(msg=f"  rc : '{rc}'")
         if rc != 0:
-            self.module.log(msg=f"  out: '{out}' ({type(out)})")
-            self.module.log(msg=f"  err: '{err}' ({type(err)})")
+            self.module.log(msg=f"cmd: '{commands}'")
+            self.module.log(msg=f"  out: '{out}')")
+            self.module.log(msg=f"  err: '{err}')")
 
         return rc, out, err
 
@@ -875,7 +940,7 @@ def main():
     kc = NextcloudClient(module)
     result = kc.run()
 
-    module.log(msg=f"= result : '{result}'")
+    # module.log(msg=f"= result : '{result}'")
 
     module.exit_json(**result)
 

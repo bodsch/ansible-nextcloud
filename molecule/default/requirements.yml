@@ -1,7 +1,8 @@
 ---
 
 - name: php-fpm
-  src: bodsch.php
+  src: https://github.com/bodsch/ansible-php.git
+  scm: git
   # version: 2.2.0
 
 - name: composer

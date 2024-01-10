@@ -110,6 +110,20 @@
           - --strip-components=1
       notify:
         - restart php-fpm
+
+    - name: check nextcloud for installation
+      nextcloud_occ:
+        command: "check"
+        owner: "{{ nextcloud_owner }}"
+        working_dir: "{{ nextcloud_install_base_directory }}/nextcloud-{{ nextcloud_version }}"
+      register: nc_status
+
+    - name: validate state  # noqa no-handler
+      ansible.builtin.debug:
+        msg: "{{ nc_status.msg }}"
+      when:
+        - nc_status.failed
+
   rescue:
     - name: remove installation directory
       ansible.builtin.file:
@@ -121,9 +135,16 @@
         state: absent
         path: "{{ nextcloud_install_base_directory }}/nextcloud"
 
+    - name: remove remote cahce directory
+      ansible.builtin.file:
+        state: absent
+        path: "/var/cache/ansible/nextcloud/facts.checksum"
+
     - name: exit with fail
       ansible.builtin.fail:
-        msg: "Error while installing of nextcloud!"
+        msg:
+          - "Error while installing of nextcloud!"
+          - "{{ nc_status.msg }}"
 
 - name: enable config write
   ansible.builtin.file:
