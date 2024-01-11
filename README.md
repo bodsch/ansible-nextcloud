@@ -144,6 +144,28 @@ nextcloud_background_jobs:
     weekday: ""
 ```
 
+### `nextcloud_groups`
+
+Creates Groups in Nextcloud.
+
+| Variable       | default    | Description |
+| : ---          | :----      | :----       |
+| `name`         | `webcron`  | Group name |
+| `display_name` | ` `        | Group name used in the web UI (can contain any characters) |
+| `state`        | `present`  | State of the Group (`present` or `absent`) |
+
+```yaml
+nextcloud_groups:
+  - name: test
+    display_name: "Testing with spaces"
+    state: present
+  - name: test2
+    state: absent
+```
+
+### `nextcloud_users`
+
+
 ---
 
 ## Contribution

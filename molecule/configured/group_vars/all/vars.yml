@@ -54,12 +54,59 @@ nextcloud_defaults:
     level: 1
 
 nextcloud_background_jobs:
-  type: systemd
+  type: ''
   daemon: "" # {{ 'cron' if ansible_os_family | lower == 'debian' else 'cronie' }}"
-  enabled: true
+  enabled: false
   cron:
     minute: "*/10"
     hour: ""
     weekday: ""
 
+nextcloud_groups:
+  - name: test
+    display_name: "Testing with spaces"
+    state: present
+  - name: test2
+    state: absent
+
+nextcloud_users:
+  - name: bodsch
+    password: juppjupp
+    # reset the passsword every time the playbook is run
+    # resetpassword: true
+    display_name: Bod Sch
+    groups:
+      - test
+
+  - name: molecule
+    password: jUppjApp
+    # reset the passsword every time the playbook is run
+    # resetpassword: true
+    display_name: Molecule Tester
+    groups:
+      - test
+
+  - name: alice
+    password: superstrongnot
+    # reset the passsword every time the playbook is run
+    resetpassword: true
+    display_name: Alice B. Charlie
+    groups:
+      - test
+      - test2
+
+  - name: honk
+    password: superstrongnot
+    state: absent
+    # reset the passsword every time the playbook is run
+    resetpassword: true
+    display_name: Honk
+    groups:
+      - test
+
+
+
+# nextcloud_apps:
+#   - name: calendar
+#     state: enabled
 ...

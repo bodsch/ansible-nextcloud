@@ -1,0 +1,9 @@
+---
+
+- name: nextcloud users
+  nextcloud_users:
+    users: "{{ nextcloud_users }}"
+    working_dir: "{{ nextcloud_install_base_directory }}/server"
+  register: nc_status
+
+...

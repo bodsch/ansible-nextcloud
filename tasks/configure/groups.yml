@@ -1,0 +1,9 @@
+---
+
+- name: nextcloud groups
+  nextcloud_groups:
+    groups: "{{ nextcloud_groups }}"
+    working_dir: "{{ nextcloud_install_base_directory }}/server"
+  register: nc_status
+
+...

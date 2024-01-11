@@ -70,7 +70,7 @@
       when:
         - getent_group is defined
 
-- name: assert pool group
+- name: assert nextcloud group
   ansible.builtin.assert:
     that:
       - nextcloud_group is defined or nextcloud_group | length == 0
