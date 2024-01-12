@@ -93,7 +93,8 @@ class NextcloudUsers(object):
                 # user_password = user.get("password", None)
                 resetpassword = user.get("resetpassword", None)
                 # user_display_name = user.get("display_name", None)
-                user_groups = user.get("groups", None)
+                user_groups = user.get("groups", [])
+                user_settings = user.get("settings", [])
 
                 if user_name:
                     res = {}
@@ -110,14 +111,12 @@ class NextcloudUsers(object):
                         else:
                             res[user_name] = self.occ_create_user(user_data=user)
 
-                        if len(user_groups) > 0:
-                            _failed, _changed, _msg = self.occ_user_groups(username=user_name, groups=user_groups)
+                        _group_failed, _group_changed, _group_msg = self.occ_user_groups(username=user_name, groups=user_groups)
 
-                            # self.module.log(msg=f" failed: {_failed}, changed: {_changed} | {_msg}")
+                        if not _group_failed and _group_changed:
+                            res[user_name]["msg"] += _group_msg
 
-                            if not _failed and _changed:
-                                # self.module.log(msg=f" {res[user_name]}")
-                                res[user_name]["msg"] += _msg
+                        _settings_failed, _settings_changed, _settings_msg = self.occ_user_settings(username=user_name, user_settings=user_settings)
 
                     else:
                         if user_name in self.existing_users:
@@ -454,6 +453,51 @@ class NextcloudUsers(object):
             m.append(f"Group(s) {skipped} does not exist, was skipped.")
 
         _msg = " ".join(m)
+
+        return (_failed, _changed, _msg)
+
+    def occ_user_settings(self, username, user_settings):
+        """
+            add settings for user
+
+            sudo -u www-data php occ
+                user:setting
+                --no-ansi
+                ...
+
+            Description:
+              Read and modify user settings
+
+            Usage:
+              user:setting [options] [--] <uid> [<app> [<key> [<value>]]]
+
+            Arguments:
+              uid                                User ID used to login
+              app                                Restrict the settings to a given app [default: ""]
+              key                                Setting key to set, get or delete [default: ""]
+              value                              The new value of the setting
+
+            Options:
+                  --output[=OUTPUT]              Output format (plain, json or json_pretty, default is plain) [default: "plain"]
+                  --ignore-missing-user          Use this option to ignore errors when the user does not exist
+                  --default-value=DEFAULT-VALUE  (Only applicable on get) If no default value is set and the config does not exist, the command will exit with 1
+                  --update-only                  Only updates the value, if it is not set before, it is not being added
+                  --delete                       Specify this option to delete the config
+                  --error-if-not-exists          Checks whether the setting exists before deleting it
+        """
+        self.module.log(msg=f"occ_user_settings({username}, {user_settings})")
+        _failed = True
+        _changed = False
+        _msg = ""
+
+        for app_setting in user_settings:
+            self.module.log(msg=f"- {app_setting}")
+
+            for app, settings in app_setting.items():
+                self.module.log(msg=f"  {app}:")
+                for key, value in settings.items():
+                    self.module.log(msg=f"    - {key}: {value}")
+
 
         return (_failed, _changed, _msg)
 

@@ -165,6 +165,27 @@ nextcloud_groups:
 
 ### `nextcloud_users`
 
+Creates Users in Nextcloud.
+
+| Variable        | default    | Description |
+| : ---           | :----      | :----       |
+| `name`          | ` `        | User name |
+| `state`         | `present`  | State of the User (`present` or `absent`) |
+| `display_name`  | ` `        | User name used in the web UI (can contain any characters) |
+| `password`      | ` `        | User password |
+| `resetpassword` | ` `        | reset the passsword (**every time the playbook is run!**) |
+| `groups`        | `[]`       | A list of groups to which the user should be added.<br>Groups that do not exist are ignored. |
+| `settings`      | ``         | *TODO* |
+
+
+```yaml
+nextcloud_users:
+  - name: bodsch
+    password: "{{ vault__users.bodsch }}"
+    display_name: Bod Sch
+    groups:
+      - test
+```
 
 ---
 

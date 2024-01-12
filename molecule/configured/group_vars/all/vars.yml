@@ -72,25 +72,23 @@ nextcloud_groups:
 nextcloud_users:
   - name: bodsch
     password: "{{ vault__users.bodsch }}"
-    # reset the passsword every time the playbook is run
-    # resetpassword: true
     display_name: Bod Sch
     groups:
       - test
 
   - name: molecule
     password: "{{ vault__users.molecule }}"
-    # reset the passsword every time the playbook is run
-    # resetpassword: true
     display_name: Molecule Tester
     groups:
       - test
+    settings:
+      - firstrunwizard:
+          show: 0
+      - calendar:
+          showWeekNr: true
 
   - name: alice
     password: "{{ vault__users.alice }}"
-    # state: absent
-    # reset the passsword every time the playbook is run
-    # resetpassword: true
     display_name: Alice B. Charlie
     groups:
       - test
@@ -101,13 +99,10 @@ nextcloud_users:
   - name: honk
     password: "{{ vault__users.honk }}"
     state: absent
-    # reset the passsword every time the playbook is run
     resetpassword: true
     display_name: Honk
     groups:
       - test
-
-
 
 # nextcloud_apps:
 #   - name: calendar

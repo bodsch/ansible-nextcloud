@@ -430,8 +430,4 @@ Options:
   -n, --no-interaction             Do not ask any interactive question
       --no-warnings                Skip global warnings, show command output only
   -v|vv|vvv, --verbose             Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
-
-
-
-
 """
