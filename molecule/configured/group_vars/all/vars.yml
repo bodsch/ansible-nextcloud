@@ -76,6 +76,7 @@ nextcloud_users:
     groups:
       - test
 
+
   - name: molecule
     password: "{{ vault__users.molecule }}"
     display_name: Molecule Tester
@@ -86,6 +87,8 @@ nextcloud_users:
           show: 0
       - calendar:
           showWeekNr: true
+      - email: "molecule@matrix.lan"
+
 
   - name: alice
     password: "{{ vault__users.alice }}"

@@ -494,9 +494,15 @@ class NextcloudUsers(object):
             self.module.log(msg=f"- {app_setting}")
 
             for app, settings in app_setting.items():
-                self.module.log(msg=f"  {app}:")
-                for key, value in settings.items():
-                    self.module.log(msg=f"    - {key}: {value}")
+                self.module.log(msg=f"  {app}:  ({settings} - {type(settings)})")
+
+                if isinstance(settings, str):
+                    self.module.log(msg=f"    - {settings}")
+
+                if isinstance(settings, dict):
+                    for key, value in settings.items():
+                        self.module.log(msg=f"    - {key}: {value}")
+
 
 
         return (_failed, _changed, _msg)
