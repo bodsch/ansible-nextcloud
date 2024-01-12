@@ -83,9 +83,9 @@ class NextcloudClient(object):
 
         rc, installed, out, err = self.occ_check()
 
-        self.module.log(msg=f" rc : '{rc}'")
-        self.module.log(msg=f" out: '{out.strip()}'")
-        self.module.log(msg=f" err: '{err.strip()}'")
+        # self.module.log(msg=f" rc : '{rc}'")
+        # self.module.log(msg=f" out: '{out.strip()}'")
+        # self.module.log(msg=f" err: '{err.strip()}'")
 
         if not installed and rc == 1:
             return dict(
@@ -716,7 +716,7 @@ class NextcloudClient(object):
             if exception:
                 err = exception.group("exception")
 
-        self.module.log(msg=f"{rc} '{installed}' '{out}' '{err}'")
+        # self.module.log(msg=f"{rc} '{installed}' '{out}' '{err}'")
 
         return (rc, installed, out, err)
 

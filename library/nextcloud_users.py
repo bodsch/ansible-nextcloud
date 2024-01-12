@@ -485,26 +485,25 @@ class NextcloudUsers(object):
                   --delete                       Specify this option to delete the config
                   --error-if-not-exists          Checks whether the setting exists before deleting it
         """
-        self.module.log(msg=f"occ_user_settings({username}, {user_settings})")
+        # self.module.log(msg=f"occ_user_settings({username}, {user_settings})")
         _failed = True
         _changed = False
         _msg = ""
 
+        result_arr = []
+
         for app_setting in user_settings:
-            self.module.log(msg=f"- {app_setting}")
-
+            # self.module.log(msg=f"- {app_setting}")
             for app, settings in app_setting.items():
-                self.module.log(msg=f"  {app}:  ({settings} - {type(settings)})")
-
-                if isinstance(settings, str):
-                    self.module.log(msg=f"    - {settings}")
-
+                result=dict()
+                result[app] = dict()
+                # self.module.log(msg=f"  {app}:  ({settings} - {type(settings)})")
                 if isinstance(settings, dict):
                     for key, value in settings.items():
-                        self.module.log(msg=f"    - {key}: {value}")
-
-
-
+                        # self.module.log(msg=f"    - {key}: {value}")
+                        result[app][key] =  self.__add_user_settings(username=username, app=app, key=key, value=value)
+                        result_arr.append(result)
+        # self.module.log(msg=f"    - {result_arr}")
         return (_failed, _changed, _msg)
 
     def occ_user_info(self, username):
@@ -588,6 +587,34 @@ class NextcloudUsers(object):
 
         # self.module.log(msg=f"= {_group_removed}")
         return _group_removed
+
+    def __add_user_settings(self, username, app, key, value):
+        """
+        """
+        # self.module.log(msg=f"__add_user_settings({username}, {app}, {key}, {value})")
+        args = []
+        args += self.occ_base_args
+
+        args.append("user:setting")
+        args.append("--no-ansi")
+        args.append("--output")
+        args.append("json")
+        args.append(username)
+        args.append(app)
+        args.append(key)
+        args.append(str(value))
+
+        rc, out, err = self.__exec(args, check_rc=False)
+
+        if rc == 0:
+            return True
+        else:
+            self.module.log(msg=f"__add_user_settings({username}, {app}, {key}, {value})")
+            self.module.log(msg=f"WARNING: {out}")
+            return False
+
+        # self.module.log(msg=f"= {_group_added}")
+        return None
 
     def __file_state(self, file_name):
         """

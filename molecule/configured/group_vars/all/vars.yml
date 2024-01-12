@@ -75,7 +75,10 @@ nextcloud_users:
     display_name: Bod Sch
     groups:
       - test
-
+    settings:
+      - settings:
+          display_name: Bodo Schulz
+          email: "bodsch@molecule.lan"
 
   - name: molecule
     password: "{{ vault__users.molecule }}"
@@ -83,12 +86,14 @@ nextcloud_users:
     groups:
       - test
     settings:
+      - settings:
+          email: "molecule@matrix.lan"
+      - notifications:
+        - sound_notification: true
       - firstrunwizard:
           show: 0
       - calendar:
           showWeekNr: true
-      - email: "molecule@matrix.lan"
-
 
   - name: alice
     password: "{{ vault__users.alice }}"
