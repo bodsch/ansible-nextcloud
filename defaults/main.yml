@@ -57,4 +57,7 @@ nextcloud_background_jobs:
     hour: ""
     weekday: ""
 
+nextcloud_groups: []
+
+nextcloud_users: []
 ...

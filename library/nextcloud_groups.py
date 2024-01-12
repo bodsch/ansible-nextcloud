@@ -62,10 +62,6 @@ class NextcloudGroups(object):
 
         rc, installed, out, err = self.occ_check(check_installed=True)
 
-        # self.module.log(msg=f" rc : '{rc}'")
-        # self.module.log(msg=f" out: '{out.strip()}'")
-        # self.module.log(msg=f" err: '{err.strip()}'")
-
         if not installed and rc == 1:
             return dict(
                 failed=False,
@@ -75,15 +71,10 @@ class NextcloudGroups(object):
 
         self.existing_groups = self.occ_list_groups()
 
-        self.module.log(f"existing_groups: {self.existing_groups}")
-
         result_state = []
 
         if self.groups:
             for group in self.groups:
-
-                self.module.log(f" - {group}")
-
                 group_state = group.get("state", "present")
                 group_name = group.get("name", None)
                 group_display_name = group.get("display_name", None)
@@ -114,17 +105,11 @@ class NextcloudGroups(object):
 
         _state, _changed, _failed, state, changed, failed = results(self.module, result_state)
 
-        self.module.log(msg=f" - state   {_state} '{state}'")
-        self.module.log(msg=f" - changed {_changed} '{changed}'")
-        self.module.log(msg=f" - failed  {_failed} '{failed}'")
-
         result = dict(
             changed = _changed,
             failed = False,
             state = result_state
         )
-
-        self.module.log(msg=f" = {result}")
 
         return result
 
@@ -379,17 +364,6 @@ def main():
     """
     """
     specs = dict(
-        # command=dict(
-        #     default="status",
-        #     choices=[
-        #         "status",
-        #         "check",
-        #         "maintenance:install",
-        #         "background:ajax",
-        #         "background:cron",
-        #         "background:webcron"
-        #     ]
-        # ),
         groups=dict(
             required=False,
             type=list,

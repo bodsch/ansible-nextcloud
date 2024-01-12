@@ -67,11 +67,11 @@ nextcloud_groups:
     display_name: "Testing with spaces"
     state: present
   - name: test2
-    state: absent
+    # state: absent
 
 nextcloud_users:
   - name: bodsch
-    password: juppjupp
+    password: "{{ vault__users.bodsch }}"
     # reset the passsword every time the playbook is run
     # resetpassword: true
     display_name: Bod Sch
@@ -79,7 +79,7 @@ nextcloud_users:
       - test
 
   - name: molecule
-    password: jUppjApp
+    password: "{{ vault__users.molecule }}"
     # reset the passsword every time the playbook is run
     # resetpassword: true
     display_name: Molecule Tester
@@ -87,16 +87,19 @@ nextcloud_users:
       - test
 
   - name: alice
-    password: superstrongnot
+    password: "{{ vault__users.alice }}"
+    # state: absent
     # reset the passsword every time the playbook is run
-    resetpassword: true
+    # resetpassword: true
     display_name: Alice B. Charlie
     groups:
       - test
       - test2
+      - foo
+      - bar
 
   - name: honk
-    password: superstrongnot
+    password: "{{ vault__users.honk }}"
     state: absent
     # reset the passsword every time the playbook is run
     resetpassword: true

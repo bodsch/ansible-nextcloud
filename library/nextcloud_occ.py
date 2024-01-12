@@ -106,7 +106,7 @@ class NextcloudClient(object):
         """
             sudo -u www-data php occ check
         """
-        self.module.log(msg=f"occ_check({check_installed})")
+        # self.module.log(msg=f"occ_check({check_installed})")
 
         args = []
         args += self.occ_base_args
@@ -116,7 +116,7 @@ class NextcloudClient(object):
         args.append("--output")
         args.append("json")
 
-        self.module.log(msg=f" args: '{args}'")
+        # self.module.log(msg=f" args: '{args}'")
 
         rc, out, err = self.__exec(args, check_rc=False)
 
@@ -155,15 +155,13 @@ class NextcloudClient(object):
             if exception:
                 err = exception.group("exception")
 
-        self.module.log(msg=f"{rc} '{installed}' '{out}' '{err}'")
-
         return (rc, installed, out, err)
 
     def occ_status(self):
         """
             sudo -u www-data php occ status
         """
-        self.module.log(msg="occ_status()")
+        # self.module.log(msg="occ_status()")
         installed = False
         version_string = None
 
@@ -175,23 +173,12 @@ class NextcloudClient(object):
         args.append("--output")
         args.append("json")
 
-        # self.module.log(msg=f" args: '{args}'")
-
         rc, out, err = self.__exec(args, check_rc=False)
-        # self.module.log(msg=f" out: '{out}' {type(out)}")
-        out = json.loads(out)
-        # self.module.log(msg=f" rc : '{rc}'")
-        # self.module.log(msg=f" out: '{out}' {type(out)}")
-        # self.module.log(msg=f" err: '{err}'")
 
         if rc == 0:
+            out = json.loads(out)
             installed = out.get("installed", False)
             version_string = out.get("version", None)
-            # pattern = re.compile(r".*occ_statusinstalled: (?P<installed>.*)\n.*version: (?P<version>.*)\n.*versionstring: (?P<versionstring>.*)\n.*edition: (?P<edition>.*)\n.*maintenance: (?P<maintenance>.*)\n.*needsDbUpgrade: (?P<db_upgrade>.*)\n.*productname: (?P<productname>.*)\n.*extendedSupport: (?P<extended_support>.*)", re.MULTILINE)
-            # version = re.search(pattern, out)
-            #
-            # if version:
-            #     version_string = version.group('version')
         else:
             err = out.strip()
 
@@ -200,8 +187,6 @@ class NextcloudClient(object):
 
             if exception:
                 err = exception.group("exception")
-
-        # self.module.log(msg=f"  version     : {version_string}")
 
         return (rc == 0, installed, version_string, err)
 
@@ -264,13 +249,7 @@ class NextcloudClient(object):
         args.append(admin_password)
         args.append("--no-ansi")
 
-        # self.module.log(msg=f" args: '{args}'")
-
         rc, out, err = self.__exec(args, check_rc=False)
-
-        # self.module.log(msg=f" rc : '{rc}'")
-        # self.module.log(msg=f" out: {type(out)} - '{out.strip()}'")
-        # self.module.log(msg=f" err: {type(err.strip())} - '{err.strip()}'")
 
         if rc == 0:
             _msg = "database was successfully created."
@@ -295,21 +274,10 @@ class NextcloudClient(object):
                 filter_list = list(filter(lambda x: re.search(pattern, x), err.splitlines()))
                 if len(filter_list) > 0 and isinstance(filter_list, list):
                     error = (filter_list[0]).strip()
-                    self.module.log(msg=f"  - {error}")
+                    # self.module.log(msg=f"  - {error}")
                     break
-            self.module.log("--------------------")
+            # self.module.log("--------------------")
 
-            # pattern = re.compile(r'.*Command "maintenance:install" is not defined.*', re.MULTILINE)
-            # pattern_db_not_supported = re.compile(r'Database .* is not supported.', re.MULTILINE)
-            #
-            # for line in err.splitlines():
-            #     self.module.log(msg=f"  line     : {line}")
-            #     for match in re.finditer(pattern, line):
-            #         result = re.search(pattern, line)
-            #         if result:
-            #             self.module.log(msg=f"  result     : {result}")
-            #         # versions.append(result.group('version'))
-            #
             _, installed, version, err = self.occ_status()
 
             if rc == 0 and not error and installed:

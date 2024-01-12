@@ -77,8 +77,8 @@ class NextcloudUsers(object):
         self.existing_groups = self.occ_list_groups()
         self.existing_users = self.occ_list_users()
 
-        self.module.log(f"existing_groups: {self.existing_groups}")
-        self.module.log(f"existing_users : {self.existing_users}")
+        # self.module.log(f"existing_groups: {self.existing_groups}")
+        # self.module.log(f"existing_users : {self.existing_users}")
 
         result_state = []
 
@@ -86,7 +86,7 @@ class NextcloudUsers(object):
             for user in self.users:
                 """
                 """
-                self.module.log(f" - {user}")
+                # self.module.log(f" - {user}")
 
                 user_state = user.get("state", "present")
                 user_name = user.get("name", None)
@@ -111,12 +111,12 @@ class NextcloudUsers(object):
                             res[user_name] = self.occ_create_user(user_data=user)
 
                         if len(user_groups) > 0:
-                            _failed,_changed, _msg = self.occ_user_add_to_groups(username=user_name, groups=user_groups)
+                            _failed, _changed, _msg = self.occ_user_groups(username=user_name, groups=user_groups)
 
-                            self.module.log(msg=f" failed: {_failed}, changed: {_changed} | {_msg}")
+                            # self.module.log(msg=f" failed: {_failed}, changed: {_changed} | {_msg}")
 
                             if not _failed and _changed:
-                                self.module.log(msg=f" {res[user_name]}")
+                                # self.module.log(msg=f" {res[user_name]}")
                                 res[user_name]["msg"] += _msg
 
                     else:
@@ -135,9 +135,9 @@ class NextcloudUsers(object):
 
         _state, _changed, _failed, state, changed, failed = results(self.module, result_state)
 
-        #self.module.log(msg=f" - state   {_state} '{state}'")
-        #self.module.log(msg=f" - changed {_changed} '{changed}'")
-        #self.module.log(msg=f" - failed  {_failed} '{failed}'")
+        # self.module.log(msg=f" - state   {_state} '{state}'")
+        # self.module.log(msg=f" - changed {_changed} '{changed}'")
+        # self.module.log(msg=f" - failed  {_failed} '{failed}'")
 
         result = dict(
             changed = _changed,
@@ -145,7 +145,7 @@ class NextcloudUsers(object):
             state = result_state
         )
 
-        #self.module.log(msg=f" = {result}")
+        # self.module.log(msg=f" = {result}")
 
         return result
 
@@ -215,7 +215,7 @@ class NextcloudUsers(object):
                 --display-name="foo"
                 "foo"
         """
-        self.module.log(msg=f"occ_create_user({user_data})")
+        # self.module.log(msg=f"occ_create_user({user_data})")
         _failed = True
         _changed = False
         _msg = ""
@@ -223,8 +223,6 @@ class NextcloudUsers(object):
         name = user_data.get("name", None)
         display_name = user_data.get("display_name", None)
         password = user_data.get("password", None)
-        resetpassword = user_data.get("resetpassword", False)
-        groups = user_data.get("groups", [])
 
         args = []
         args += self.occ_base_args
@@ -232,12 +230,8 @@ class NextcloudUsers(object):
         args.append("user:add")
 
         if password:
-            # os.environ['OC_PASS'] = password
             self.module.run_command_environ_update = {"OC_PASS": password}
             args.append("--password-from-env")
-
-        # args.append("--output")
-        # args.append("json")
 
         if display_name:
             args.append("--display-name")
@@ -246,54 +240,16 @@ class NextcloudUsers(object):
         args.append("--no-ansi")
         args.append(name)
 
-        self.module.log(msg=f" args: '{args}'")
-        # self.module.log(msg=f" env : '{os.environ}'")
-
         rc, out, err = self.__exec(args, check_rc=False)
-
-        self.module.log(msg=f" rc : '{rc}'")
-        self.module.log(msg=f" out: {type(out)} - '{out.strip()}'")
-        self.module.log(msg=f" err: {type(err.strip())} - '{err.strip()}'")
 
         if rc == 0:
             _msg = "User was successfully created."
             _failed = False
             _changed = True
-
-            #if resetpassword:
-            #    self.occ_user_reset_password(username=name, password=password)
-
-            #if len(groups) > 0:
-            #    _groups = self.occ_add_user_to_groups(username=name, groups=groups)
-
         else:
             _failed = True
             _changed = False
-            _msg = out
-
-            # patterns = [
-            #     'Group ".*" already exists.',
-            # ]
-            # error = None
-            #
-            # # out = json.loads(out)
-            #
-            # for pattern in patterns:
-            #     filter_list = list(filter(lambda x: re.search(pattern, x), err.splitlines()))
-            #     if len(filter_list) > 0 and isinstance(filter_list, list):
-            #         error = (filter_list[0]).strip()
-            #         self.module.log(msg=f"  - {error}")
-            #         break
-            # # self.module.log("--------------------")
-            #
-            # if rc == 0 and not error:
-            #     _failed = False
-            #     _changed = False
-            #     _msg = f"Group {name} already created."
-            # else:
-            #     _failed = False
-            #     _changed = False
-            #     _msg = error
+            _msg = out.strip()
 
         return dict(
             failed=_failed,
@@ -305,11 +261,15 @@ class NextcloudUsers(object):
         """
             sudo -u www-data php occ
                 user:resetpassword
+        # self.module.log(msg=f" rc : '{rc}'")
+        # self.module.log(msg=f" out: {type(out)} - '{out.strip()}'")
+        # self.module.log(msg=f" err: {type(err.strip())} - '{err.strip()}'")
+
                 --no-ansi
                 --password-from-env
                 "foo"
         """
-        self.module.log(msg=f"occ_reset_password({user_data})")
+        # self.module.log(msg=f"occ_reset_password({user_data})")
         _failed = True
         _changed = False
         _msg = ""
@@ -329,13 +289,7 @@ class NextcloudUsers(object):
 
         args.append(name)
 
-        self.module.log(msg=f" args: '{args}'")
-
         rc, out, err = self.__exec(args, check_rc=False)
-
-        self.module.log(msg=f" rc : '{rc}'")
-        self.module.log(msg=f" out: {type(out)} - '{out.strip()}'")
-        self.module.log(msg=f" err: {type(err.strip())} - '{err.strip()}'")
 
         if rc == 0:
             _msg = f"{out.strip()}."
@@ -359,54 +313,34 @@ class NextcloudUsers(object):
                 --no-ansi
                 "foo"
         """
-        self.module.log(msg=f"occ_remove_user({name})")
+        # self.module.log(msg=f"occ_remove_user({name})")
         _failed = True
         _changed = False
         _msg = ""
 
-        # args = []
-        # args += self.occ_base_args
-        #
-        # args.append("user:delete")
-        # args.append("--no-ansi")
-        # args.append(name)
-        #
-        # self.module.log(msg=f" args: '{args}'")
-        #
-        # rc, out, err = self.__exec(args, check_rc=False)
-        #
-        # # self.module.log(msg=f" rc : '{rc}'")
-        # # self.module.log(msg=f" out: {type(out)} - '{out.strip()}'")
-        # # self.module.log(msg=f" err: {type(err.strip())} - '{err.strip()}'")
-        #
-        # if rc == 0:
-        #     _msg = "Group was successfully removed."
-        #     _failed = False
-        #     _changed = True
-        # else:
-        #     patterns = [
-        #         'Group ".*" already exists.',
-        #     ]
-        #     error = None
-        #
-        #     # out = json.loads(out)
-        #
-        #     for pattern in patterns:
-        #         filter_list = list(filter(lambda x: re.search(pattern, x), out.splitlines()))
-        #         if len(filter_list) > 0 and isinstance(filter_list, list):
-        #             error = (filter_list[0]).strip()
-        #             self.module.log(msg=f"  - {error}")
-        #             break
-        #     # self.module.log("--------------------")
-        #
-        #     if rc == 0 and not error:
-        #         _failed = False
-        #         _changed = False
-        #         _msg = f"Group {name} already created."
-        #     else:
-        #         _failed = False
-        #         _changed = False
-        #         _msg = error
+        args = []
+        args += self.occ_base_args
+
+        args.append("user:delete")
+        args.append("--no-ansi")
+        args.append(name)
+
+        self.module.log(msg=f" args: '{args}'")
+
+        rc, out, err = self.__exec(args, check_rc=False)
+
+        # self.module.log(msg=f" rc : '{rc}'")
+        # self.module.log(msg=f" out: {type(out)} - '{out.strip()}'")
+        # self.module.log(msg=f" err: {type(err.strip())} - '{err.strip()}'")
+
+        if rc == 0:
+            _msg = "User was successfully removed."
+            _failed = False
+            _changed = True
+        else:
+            _failed = True
+            _changed = False
+            _msg = out.strip()
 
         return dict(
             failed=_failed,
@@ -448,52 +382,80 @@ class NextcloudUsers(object):
         group_names = [x for x, _ in out.items()]
         return group_names
 
-    def occ_user_add_to_groups(self, username, groups):
+    def occ_user_groups(self, username, groups):
         """
+            add user to group(s)
+            remove user from group(s)
+
             sudo -u www-data php occ
                 user:delete
                 --no-ansi
                 "foo"
         """
-        self.module.log(msg=f"occ_user_add_to_groups({username}, {groups})")
+        # self.module.log(msg=f"occ_user_groups({username}, {groups})")
         _failed = True
         _changed = False
         _msg = ""
 
-        user_state = self.occ_user_info(username)
+        _state = self.occ_user_info(username)
+        user_state = _state.get("state", "absent")
 
-        self.module.log(msg=f"{username} : {user_state}")
+        if user_state == "absent":
+            return (_failed, _changed, f"The User {username} has not yet been created.")
 
-        if user_state.get("state", "absent") == "present":
-            _group_added = []
-            _group_skipped = []
+        # user is current in groups
+        user_groups = _state.get("groups", [])
 
-            for group in groups:
+        # invalid groups
+        groups_invalid = list(set(groups) - set(self.existing_groups))
 
-                if group in self.existing_groups:
+        # valid groups for this user, remove not exists groups
+        valid_user_groups = [x for x in self.existing_groups if x in groups]
 
-                    _group_added.append(group)
-                else:
-                    _group_skipped.append(group)
+        # user ist NOT in group
+        groups_missing = [x for x in valid_user_groups if x not in user_groups]
 
-            if len(_group_added) > 0 and len(_group_skipped) > 0:
-                m = []
-                _failed = False
-                _changed = True
+        # user should removed from group
+        groups_removing = [x for x in user_groups if x not in groups]
 
-                if len(_group_added) > 0:
-                    added = ", ".join(_group_added)
-                    m.append(f" Added to group: {added}")
+        # self.module.log(msg=f"{username} : {user_state}")
+        # self.module.log(msg=f"  - groups exists: {self.existing_groups}")
+        # self.module.log(msg=f"    - is in groups: {user_groups}")
+        # self.module.log(msg=f"    - should in groups: {groups}")
+        # self.module.log(msg=f"    - valid user groups: {valid_user_groups}")
+        # self.module.log(msg=f"    - groups missing: {groups_missing}")
+        # self.module.log(msg=f"    - remove from groups: {groups_removing}")
+        # self.module.log(msg=f"    - groups invalid: {groups_invalid}")
+        _group_added = []
+        _group_removed = []
+        _group_skipped = groups_invalid
+        m = []
 
-                if len(_group_skipped) > 0:
-                    skipped = ", ".join(_group_skipped)
-                    m.append("groups {skipped} skipped")
+        if len(groups_missing) > 0:
+            _group_added = self.__add_user_to_group(username=username, groups=groups_missing)
 
-                _msg = ", ".join(m)  # f" Added to group: {added} , groups {skipped} skipped."
-        else:
-            _msg=f"The User {username} has not yet been created."
+        if len(groups_removing) > 0:
+            _group_removed = self.__delete_user_from_group(username=username, groups=groups_removing)
 
-        return (_failed,_changed, _msg)
+        if len(_group_removed) > 0 or len(_group_added) > 0:
+            _failed = False
+            _changed = True
+
+            if len(_group_added) > 0:
+                added = ", ".join(_group_added)
+                m.append(f" Added to group(s): {added}.")
+
+            if len(_group_removed) > 0:
+                removed = ", ".join(_group_removed)
+                m.append(f" Removed from group(s): {removed}.")
+
+        if len(_group_skipped) > 0:
+            skipped = ", ".join(_group_skipped)
+            m.append(f"Group(s) {skipped} does not exist, was skipped.")
+
+        _msg = " ".join(m)
+
+        return (_failed, _changed, _msg)
 
     def occ_user_info(self, username):
         """
@@ -503,7 +465,7 @@ class NextcloudUsers(object):
                 --output json
                 bob
         """
-        self.module.log(msg=f"occ_user_info({username})")
+        # self.module.log(msg=f"occ_user_info({username})")
 
         args = []
         args += self.occ_base_args
@@ -527,6 +489,55 @@ class NextcloudUsers(object):
             )
 
         return out
+
+    def __add_user_to_group(self, username, groups):
+        """
+        """
+        # self.module.log(msg=f"__add_user_to_group({username}, {groups})")
+        _group_added = []
+        for group in groups:
+            args = []
+            args += self.occ_base_args
+
+            args.append("group:adduser")
+            args.append("--no-ansi")
+            args.append(group)
+            args.append(username)
+
+            rc, out, err = self.__exec(args, check_rc=False)
+
+            if rc == 0:
+                _group_added.append(group)
+            else:
+                pass
+
+        # self.module.log(msg=f"= {_group_added}")
+        return _group_added
+
+    def __delete_user_from_group(self, username, groups):
+        """
+        """
+        # self.module.log(msg=f"__delete_user_from_group({username}, {groups})")
+        _group_removed = []
+
+        for group in groups:
+            args = []
+            args += self.occ_base_args
+
+            args.append("group:removeuser")
+            args.append("--no-ansi")
+            args.append(group)
+            args.append(username)
+
+            rc, out, err = self.__exec(args, check_rc=False)
+
+            if rc == 0:
+                _group_removed.append(group)
+            else:
+                pass
+
+        # self.module.log(msg=f"= {_group_removed}")
+        return _group_removed
 
     def __file_state(self, file_name):
         """
