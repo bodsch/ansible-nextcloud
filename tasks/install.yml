@@ -1,5 +1,24 @@
 ---
 
+# - name: get version of installed php-fpm
+#   bodsch.core.package_version:
+#     package_name: php-fpm
+#     state: installed
+#   register: _php_version
+#
+# - name: d
+#   debug:
+#     msg: "{{ _php_version }}"
+#
+# - name: define php version
+#   ansible.builtin.set_fact:
+#     php_version: "{{ _php_version.available.platform_version }}"
+#   # available:
+#   #   full_version: '8.3'
+#   #   major_version: '8'
+#   #   platform_version: '8.3'
+#   #   version_string_compressed: '83'
+
 - name: merge dependencies between defaults and custom
   ansible.builtin.set_fact:
     nextcloud_dependencies: "{{ nextcloud_dependencies + nextcloud_packages }}"

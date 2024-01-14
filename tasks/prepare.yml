@@ -21,6 +21,9 @@
     - package_version.available.major_version is defined
     - package_version.available.version_string_compressed is defined
 
+- name: do facts module to get latest information
+  ansible.builtin.setup:
+
 - name: assert php_version for nextcloud {{ nextcloud_main_version }} ({{ nextcloud_version }})
   ansible.builtin.assert:
     that:
