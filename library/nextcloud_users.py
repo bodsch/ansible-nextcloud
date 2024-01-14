@@ -495,13 +495,13 @@ class NextcloudUsers(object):
         for app_setting in user_settings:
             # self.module.log(msg=f"- {app_setting}")
             for app, settings in app_setting.items():
-                result=dict()
+                result = dict()
                 result[app] = dict()
                 # self.module.log(msg=f"  {app}:  ({settings} - {type(settings)})")
                 if isinstance(settings, dict):
                     for key, value in settings.items():
                         # self.module.log(msg=f"    - {key}: {value}")
-                        result[app][key] =  self.__add_user_settings(username=username, app=app, key=key, value=value)
+                        result[app][key] = self.__add_user_settings(username=username, app=app, key=key, value=value)
                         result_arr.append(result)
         # self.module.log(msg=f"    - {result_arr}")
         return (_failed, _changed, _msg)

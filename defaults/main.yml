@@ -61,4 +61,7 @@ nextcloud_background_jobs:
 nextcloud_groups: []
 
 nextcloud_users: []
+
+nextcloud_apps: []
+
 ...

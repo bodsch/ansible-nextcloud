@@ -187,6 +187,21 @@ nextcloud_users:
       - test
 ```
 
+### `nextcloud_apps`
+
+Install Nextcloud Apps.
+
+| Variable        | default    | Description |
+| : ---           | :----      | :----       |
+| `name`          | ` `        | App name |
+| `state`         | `present`  | State of the App (`present`, `absent`, `enabled` or `disabled` ) |
+
+```yaml
+nextcloud_apps:
+  - name: calendar
+    state: disabled
+```
+
 ---
 
 ## Contribution

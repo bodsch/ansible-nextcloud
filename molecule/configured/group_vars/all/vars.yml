@@ -112,7 +112,15 @@ nextcloud_users:
     groups:
       - test
 
-# nextcloud_apps:
-#   - name: calendar
-#     state: enabled
+nextcloud_apps:
+  - name: calendar
+    # state: disabled
+  - name: tasks
+  - name: news
+  - name: dashboard
+    # state: disabled
+  - name: support
+    # state: disabled
+
+
 ...
