@@ -4,16 +4,6 @@ nextcloud_install_base_directory: /var/www/nextcloud.molecule.lan
 
 nextcloud_instande_id: oczgldo770me
 
-nextcloud_database:
-  type: mysql
-  username: nextcloud
-  password: nextcloud
-  hostname: database
-  port: 3306
-  schema: nextcloud
-  mysql:
-    utf8mb4: true
-
 nextcloud_trusted_domains:
   - nextcloud.molecule.lan
   - nextcloud.molecule.local
@@ -22,30 +12,9 @@ nextcloud_password_salt: cpkxiYp1+qP2YQBGHBz+Tyxq5hzK3D
 nextcloud_secret: '0Yvgwz56NtIYLL1t6+5DhUuUA1HZCbl7ojaLLOQQMZN4kYM3'
 
 nextcloud_defaults:
-  # language:
-  #   default: de
-  # locale:
-  #   default: de_DE
   phone_region: DE
 
   data_directory: "/var/www/nc_data"
-
-  memcache:
-    # local: '\OC\Memcache\APCu'
-    # distributed: '\OC\Memcache\Redis'
-    # locking: '\OC\Memcache\Redis'
-    servers:
-      - host: localhost
-        port: 11211
-        weight: 0
-      - host: 127.0.0.1
-        port: 11212
-        weight: 1
-
-  redis:
-      # can also be a unix domain socket: '/tmp/redis.sock'
-    - host: 'redis'
-      port: 6379
 
   logging:
     type: 'file'
@@ -54,11 +23,11 @@ nextcloud_defaults:
     level: 1
 
 nextcloud_background_jobs:
-  type: ''
-  daemon: "" # {{ 'cron' if ansible_os_family | lower == 'debian' else 'cronie' }}"
-  enabled: false
+  type: 'systemd'
+  daemon: ""      # {{ 'cron' if ansible_os_family | lower == 'debian' else 'cronie' }}"
+  enabled: true
   cron:
-    minute: "*/10"
+    minute: "*/5"
     hour: ""
     weekday: ""
 
@@ -67,7 +36,7 @@ nextcloud_groups:
     display_name: "Testing with spaces"
     state: present
   - name: test2
-    # state: absent
+    state: absent
 
 nextcloud_users:
   - name: bodsch
@@ -114,13 +83,18 @@ nextcloud_users:
 
 nextcloud_apps:
   - name: calendar
-    # state: disabled
+    state: enabled
   - name: tasks
-  - name: news
-  - name: dashboard
-    # state: disabled
-  - name: support
-    # state: disabled
-
+    state: enabled
+  - name: deck
+    state: enabled
+  - name: contacts
+    state: enabled
+  - name: forms
+    state: enabled
+  - name: groupfolders
+    state: enabled
+  - name: recognize
+    state: absent
 
 ...

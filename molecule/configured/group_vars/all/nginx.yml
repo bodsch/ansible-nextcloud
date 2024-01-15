@@ -3,6 +3,9 @@
 nginx_gzip:
   enabled: true
 
+nginx_events:
+  multi_accept: true
+
 nginx_logformat:
   json_combined:
     format: |
@@ -29,7 +32,10 @@ nginx_vhosts:
       - nextcloud.molecule.local
 
     listen:
-      - 80
+      - 443 ssl http2
+
+    redirect:
+      from_port: 80
 
     root_directory: "{{ nextcloud_install_base_directory }}/server"
     root_directory_create: false
@@ -52,8 +58,15 @@ nginx_vhosts:
         file: /var/log/nginx/nextcloud.molecule.lan/error.log
         loglevel: notice
 
-    locations:
+    # enable ssl
+    ssl:
+      enabled: true
+      certificate: /etc/snakeoil/molecule.lan/molecule.lan.crt
+      certificate_key: /etc/snakeoil/molecule.lan/molecule.lan.key
+      dhparam: /etc/snakeoil/molecule.lan/dh.pem
 
+
+    locations:
       # Rule borrowed from `.htaccess` to handle Microsoft DAV clients
       "= /":
         options: |

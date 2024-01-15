@@ -32,6 +32,7 @@ nextcloud_php_packages:
     - php{{ php_version }}-redis
   memcache:
     - php{{ php_version }}-memcached
+    - php{{ php_version }}-msgpack
   sqlite:
     - php{{ php_version }}-sqlite3
   mysql:

@@ -63,10 +63,6 @@ class NextcloudApps(object):
 
         rc, installed, out, err = self.occ_check(check_installed=True)
 
-        # self.module.log(msg=f" rc : '{rc}'")
-        # self.module.log(msg=f" out: '{out.strip()}'")
-        # self.module.log(msg=f" err: '{err.strip()}'")
-
         if not installed and rc == 1:
             return dict(
                 failed=False,
@@ -74,13 +70,7 @@ class NextcloudApps(object):
                 msg=out
             )
 
-        self.existing_apps = self.occ_list_apps()
-        self.enabled_apps = [x for x, _ in self.existing_apps.get("enabled", {}).items()]
-        self.disabled_apps = [x for x, _ in self.existing_apps.get("disabled", {}).items()]
-
-        self.module.log(f"existing_apps : {self.existing_apps}")
-        self.module.log(f"enabled apps  : {self.enabled_apps}")
-        self.module.log(f"disabled apps : {self.disabled_apps}")
+        existing_apps, enabled_apps, disabled_apps = self.occ_list_apps()
 
         result_state = []
 
@@ -88,11 +78,8 @@ class NextcloudApps(object):
             for app in self.apps:
                 """
                 """
-                # self.module.log(f" - {user}")
-
                 app_state = app.get("state", "present")
                 app_name = app.get("name", None)
-                app_settings = app.get("settings", [])
                 groups = []
 
                 if app_name:
@@ -100,39 +87,66 @@ class NextcloudApps(object):
 
                     _, _, _installed = self.occ_path_app(app_name=app_name)
 
-                    self.module.log(f" - {app_name} installed: {_installed}")
-
                     if app_state in ["present", "enabled"]:
-
-                        if not installed:
+                        install_app = dict()
+                        enabled_app = dict()
+                        if not _installed:
                             install_app = self.occ_install_app(app_name=app_name)
-                            self.module.log(f" - {install_app}")
+                            # self.module.log(f" - {install_app}")
                         else:
                             res[app_name] = dict(
                                 changed=False,
                                 msg="The app has already been installed."
                             )
 
-                        if app_state == "enabled" and (app_name in self.disabled_apps or not installed):
+                        if not install_app.get("failed", False) and app_state == "enabled" and (app_name in disabled_apps or not _installed):
                             enabled_app = self.occ_enable_app(app_name=app_name, groups=groups)
                             self.module.log(f" - {enabled_app}")
 
-                        _settings_failed, _settings_changed, _settings_msg = self.occ_app_settings(app_name=app_name, app_settings=app_settings)
+                        _failed = (install_app.get("failed", False) or enabled_app.get("failed", False))
+                        _changed = (install_app.get("changed", False) or enabled_app.get("changed", False))
 
-                        res[app_name] = dict()
+                        _msg = ""
+                        install_msg = install_app.get("msg", "")
+                        enabled_msg = enabled_app.get("msg", "")
+
+                        # self.module.log(f"   install_msg: {install_msg}")
+                        # self.module.log(f"   enabled_msg: {enabled_msg}")
+
+                        if _failed:
+                            if len(install_msg) > 0:
+                                _msg = install_msg
+                            if len(enabled_msg) > 0:
+                                _msg += f"{ enabled_msg}"
+
+                            res[app_name] = dict(
+                                failed=_failed,
+                                changed=_changed,
+                                msg=_msg
+                            )
+                        else:
+                            if len(install_msg) > 0 and len(enabled_msg) > 0:
+                                _msg = "App was successfully installed and enabled."
+                            elif len(install_msg) > 0 and len(enabled_msg) == 0:
+                                _msg = install_msg
+                            elif len(install_msg) == 0 and len(enabled_msg) > 0:
+                                _msg = enabled_msg
+
+                            if len(_msg) > 0:
+                                res[app_name].update({"msg": _msg})
 
                     elif app_state in ["absent", "disabled"]:
 
-                        if app_state == "disabled" and (app_name in self.enabled_apps or installed):
+                        if app_state == "disabled" and (app_name in enabled_apps or _installed):
                             res[app_name] = self.occ_disable_app(app_name=app_name)
 
                         if app_state == "absent":
-                            if app_name in self.existing_apps:
-                                res[app_name] = self.occ_remove_app(name=app_name)
+                            if app_name in enabled_apps or app_name in disabled_apps:
+                                res[app_name] = self.occ_remove_app(app_name=app_name)
                             else:
                                 res[app_name] = dict(
                                     changed=False,
-                                    msg="The app does not exist (anymore)."
+                                    msg="The app was not installed."
                                 )
 
                     result_state.append(res)
@@ -142,17 +156,11 @@ class NextcloudApps(object):
 
         _state, _changed, _failed, state, changed, failed = results(self.module, result_state)
 
-        # self.module.log(msg=f" - state   {_state} '{state}'")
-        # self.module.log(msg=f" - changed {_changed} '{changed}'")
-        # self.module.log(msg=f" - failed  {_failed} '{failed}'")
-
         result = dict(
             changed = _changed,
-            failed = False,
+            failed = failed,
             state = result_state
         )
-
-        # self.module.log(msg=f" = {result}")
 
         return result
 
@@ -170,17 +178,12 @@ class NextcloudApps(object):
         args.append("--output")
         args.append("json")
 
-        # self.module.log(msg=f" args: '{args}'")
-
         rc, out, err = self.__exec(args, check_rc=False)
 
         """
             not installed: "Nextcloud is not installed - only a limited number of commands are available"
             installed: ''
         """
-        # self.module.log(msg=f" rc : '{rc}'")
-        # self.module.log(msg=f" out: '{out.strip()}'")
-        # self.module.log(msg=f" err: '{err.strip()}'")
 
         if not check_installed:
             return rc, out, err
@@ -189,11 +192,7 @@ class NextcloudApps(object):
 
         if rc == 0:
             pattern = re.compile(r"Nextcloud is not installed.*", re.MULTILINE)
-            # installed_out = re.search(pattern_1, out)
             is_installed = re.search(pattern, err)
-
-            # self.module.log(msg=f" out: '{installed_out}'")
-            # self.module.log(msg=f" err: '{is_installed}' {type(is_installed)}")
 
             if is_installed:
                 installed = False
@@ -209,18 +208,10 @@ class NextcloudApps(object):
             if exception:
                 err = exception.user("exception")
 
-        # self.module.log(msg=f"{rc} '{installed}' '{out}' '{err}'")
-
         return (rc, installed, out, err)
 
     def occ_install_app(self, app_name):
         """
-            sudo -u www-data php occ
-                user:add
-                --no-ansi            if len(groups) > 0:
-                _groups = self.occ_add_app_to_groups(app_name=name, groups=groups)
-                --display-name="foo"
-                "foo"
         """
         self.module.log(msg=f"occ_install_app({app_name})")
         _failed = True
@@ -232,12 +223,13 @@ class NextcloudApps(object):
 
         args.append("app:install")
         args.append("--no-ansi")
+        args.append("--keep-disabled")
         args.append(app_name)
 
         rc, out, err = self.__exec(args, check_rc=False)
 
         if rc == 0:
-            _msg = "App was successfully created."
+            _msg = "App was successfully installed."
             _failed = False
             _changed = True
         else:
@@ -253,10 +245,6 @@ class NextcloudApps(object):
 
     def occ_remove_app(self, app_name):
         """
-            sudo -u www-data php occ
-                user:delete
-                --no-ansi
-                "foo"
         """
         # self.module.log(msg=f"occ_remove_app({app_name})")
         _failed = True
@@ -295,12 +283,6 @@ class NextcloudApps(object):
 
     def occ_path_app(self, app_name):
         """
-            sudo -u www-data php occ
-                user:add
-                --no-ansi            if len(groups) > 0:
-                _groups = self.occ_add_app_to_groups(app_name=name, groups=groups)
-                --display-name="foo"
-                "foo"
         """
         self.module.log(msg=f"occ_path_app({app_name})")
         _failed = True
@@ -329,14 +311,8 @@ class NextcloudApps(object):
 
     def occ_enable_app(self, app_name, groups=[]):
         """
-            sudo -u www-data php occ
-                user:add
-                --no-ansi            if len(groups) > 0:
-                _groups = self.occ_add_app_to_groups(app_name=name, groups=groups)
-                --display-name="foo"
-                "foo"
         """
-        self.module.log(msg=f"occ_install_app({app_name}, {groups})")
+        self.module.log(msg=f"occ_enable_app({app_name}, {groups})")
         _failed = True
         _changed = False
         _msg = ""
@@ -372,12 +348,6 @@ class NextcloudApps(object):
 
     def occ_disable_app(self, app_name):
         """
-            sudo -u www-data php occ
-                user:add
-                --no-ansi            if len(groups) > 0:
-                _groups = self.occ_add_app_to_groups(app_name=name, groups=groups)
-                --display-name="foo"
-                "foo"
         """
         self.module.log(msg=f"occ_disable_app({app_name})")
         _failed = True
@@ -437,44 +407,16 @@ class NextcloudApps(object):
         if rc == 0:
             out = json.loads(out)
 
-            # self.module.log(f"existing_apps : {out}")
+            app_names = out
 
-            app_names = out  # [x for x, _ in out.items()]
+        enabled_apps = [x for x, _ in app_names.get("enabled", {}).items()]
+        disabled_apps = [x for x, _ in app_names.get("disabled", {}).items()]
 
-        return app_names
+        # self.module.log(f"existing_apps : {app_names}")
+        # self.module.log(f"enabled apps  : {enabled_apps}")
+        # self.module.log(f"disabled apps : {disabled_apps}")
 
-    def occ_app_info(self, app_name):
-        """
-            sudo -u www-data php occ
-                user:info
-                --no-ansi
-                --output json
-                bob
-        """
-        # self.module.log(msg=f"occ_app_info({app_name})")
-
-        args = []
-        args += self.occ_base_args
-
-        args.append("app:info")
-        args.append("--no-ansi")
-        args.append("--output")
-        args.append("json")
-        args.append(app_name)
-
-        rc, out, err = self.__exec(args, check_rc=False)
-
-        if rc == 0:
-            out = json.loads(out)
-            out.update({"state": "present"})
-        else:
-            out = dict(
-                app_id=app_name,
-                state="absent",
-                msg=out.strip()
-            )
-
-        return out
+        return (app_names, enabled_apps, disabled_apps)
 
     def __file_state(self, file_name):
         """

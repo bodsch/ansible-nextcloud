@@ -45,20 +45,12 @@
           - "ansible version      : {{ ansible_version.full }}"
           - "python version       : {{ ansible_python.version.major }}.{{ ansible_python.version.minor }}"
 
-- name: prepare database container
-  hosts: database
-  gather_facts: true
-
-  roles:
-    - role: apparmor
-    - role: snapd
-    - role: mariadb
-
 - name: prepare instance container
   hosts: instance
   gather_facts: true
 
   roles:
+    - role: bodsch.core.snakeoil
     - role: nginx
     - role: php-fpm
     - role: composer

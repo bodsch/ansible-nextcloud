@@ -10,6 +10,9 @@ php_fpm_default_pool:
   delete: true
   name: www.conf
 
+php_packages:
+  - php-msgpack
+
 php_fpm_pools:
   - name: worker-01
     user: "{{ php_fpm_pool_user }}"
@@ -41,7 +44,7 @@ php_modules:
     enabled: true
     priority: 10
     content: |
-      zend_extension=opcache.so
+      zend_extension=opcache
       opcache.enable=1
       opcache.enable_cli=1
       opcache.memory_consumption=128
@@ -52,17 +55,23 @@ php_modules:
       opcache.revalidate_path=0
       opcache.revalidate_freq=1
       opcache.max_file_size=0
-  - name: pdo_mysql
+  # before memcached!
+  - name: msgpack
     enabled: true
+    priority: 18
+    content: |
+      extension=msgpack
+  - name: pdo_mysql
+    enabled: false
     priority: 20
     content: |
-      extension=pdo_mysql.so
+      extension=pdo_mysql
       pdo_mysql.cache_size = 2000
   - name: pdo_sqlite
     enabled: true
     priority: 20
     content: |
-      extension=pdo_sqlite.so
+      extension=pdo_sqlite
   - name: sqlite3
     enabled: true
     priority: 20
@@ -72,7 +81,7 @@ php_modules:
     enabled: true
     priority: 20
     content: |
-      extension=gd.so
+      extension=gd
       gd.jpeg_ignore_warning = 1
   - name: intl
     enabled: true
@@ -96,10 +105,11 @@ php_modules:
     content: |
       extension=curl
   - name: memcached
-    enabled: false
+    enabled: true
     priority: 20
     content: |
-      extension=memcached.so
+      extension=memcached
+
   - name: zip
     enabled: true
     priority: 20
@@ -110,7 +120,7 @@ php_modules:
     enabled: false
     priority: 20
     content: |
-      extension=apcu.so
+      extension=apcu
       apc.shm_size=96M
       apc.enable_cli=0
       apc.rfc1867=1
