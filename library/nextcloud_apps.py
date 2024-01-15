@@ -92,7 +92,7 @@ class NextcloudApps(object):
                         enabled_app = dict()
                         if not _installed:
                             install_app = self.occ_install_app(app_name=app_name)
-                            # self.module.log(f" - {install_app}")
+                            self.module.log(f" - {install_app}")
                         else:
                             res[app_name] = dict(
                                 changed=False,
@@ -109,9 +109,6 @@ class NextcloudApps(object):
                         _msg = ""
                         install_msg = install_app.get("msg", "")
                         enabled_msg = enabled_app.get("msg", "")
-
-                        # self.module.log(f"   install_msg: {install_msg}")
-                        # self.module.log(f"   enabled_msg: {enabled_msg}")
 
                         if _failed:
                             if len(install_msg) > 0:
@@ -133,7 +130,11 @@ class NextcloudApps(object):
                                 _msg = enabled_msg
 
                             if len(_msg) > 0:
-                                res[app_name].update({"msg": _msg})
+                                res[app_name] = dict(
+                                    failed=_failed,
+                                    changed=_changed,
+                                    msg=_msg
+                                )
 
                     elif app_state in ["absent", "disabled"]:
 
