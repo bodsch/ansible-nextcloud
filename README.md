@@ -125,7 +125,7 @@ nextcloud_defaults:
 To create the Background Job.
 
 | Variable       | default    | Description |
-| : ---          | :----      | :----       |
+| :---           | :----      | :----       |
 | `type`         | `webcron`  | alternative and currently not supported: `webcron`, `ajax`. systemd User can create an system timer with `systemd` insteed `cron` |
 | `daemon`       | ` `        | the named cron package (Will be installed) |
 | `enabled`      | `false`    | enable cron Background Jobs.            |
@@ -149,7 +149,7 @@ nextcloud_background_jobs:
 Creates Groups in Nextcloud.
 
 | Variable       | default    | Description |
-| : ---          | :----      | :----       |
+| :---           | :----      | :----       |
 | `name`         | `webcron`  | Group name |
 | `display_name` | ` `        | Group name used in the web UI (can contain any characters) |
 | `state`        | `present`  | State of the Group (`present` or `absent`) |
@@ -168,7 +168,7 @@ nextcloud_groups:
 Creates Users in Nextcloud.
 
 | Variable        | default    | Description |
-| : ---           | :----      | :----       |
+| :---            | :----      | :----       |
 | `name`          | ` `        | User name |
 | `state`         | `present`  | State of the User (`present` or `absent`) |
 | `display_name`  | ` `        | User name used in the web UI (can contain any characters) |
@@ -192,7 +192,7 @@ nextcloud_users:
 Install Nextcloud Apps.
 
 | Variable        | default    | Description |
-| : ---           | :----      | :----       |
+| :---            | :----      | :----       |
 | `name`          | ` `        | App name |
 | `state`         | `present`  | State of the App (`present`, `absent`, `enabled` or `disabled` ) |
 
