@@ -112,7 +112,7 @@ nextcloud_defaults_defaults:
   template_directory: ""
   temp_directory: ""
   update_directory: ""
-  data_directory: "{{ nextcloud_install_base_directory }}/nextcloud_data"
+  data_directory: "{{ nextcloud_install_base_directory }}/nextcloud/data"
 
   lost_password_link: ""
   logo_url: ""

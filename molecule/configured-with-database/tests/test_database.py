@@ -10,7 +10,7 @@ import os
 
 import testinfra.utils.ansible_runner
 
-HOST = 'instance'
+HOST = 'database'
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(HOST)
@@ -73,26 +73,28 @@ def get_vars(host):
     elif distribution in ['arch', 'artix']:
         operation_system = f"{distribution}linux"
 
-    # print(" -> {} / {}".format(distribution, os))
-    # print(" -> {}".format(base_dir))
+    print(f" -> {distribution} / {os}")
+    print(f" -> {base_dir}")
 
     file_defaults      = read_ansible_yaml(f"{base_dir}/defaults/main", "role_defaults")
     file_vars          = read_ansible_yaml(f"{base_dir}/vars/main", "role_vars")
     file_distibution   = read_ansible_yaml(f"{base_dir}/vars/{operation_system}", "role_distibution")
     file_molecule      = read_ansible_yaml(f"{molecule_dir}/group_vars/all/vars", "test_vars")
-    # file_host_molecule = read_ansible_yaml("{}/host_vars/{}/vars".format(base_dir, HOST), "host_vars")
+    file_host_molecule = read_ansible_yaml(f"{molecule_dir}/group_vars/{HOST}/mariadb", "host_vars")
+
+    print(f" -> {file_host_molecule}")
 
     defaults_vars      = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
     vars_vars          = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
     distibution_vars   = host.ansible("include_vars", file_distibution).get("ansible_facts").get("role_distibution")
     molecule_vars      = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
-    # host_vars          = host.ansible("include_vars", file_host_molecule).get("ansible_facts").get("host_vars")
+    host_vars          = host.ansible("include_vars", file_host_molecule).get("ansible_facts").get("host_vars")
 
     ansible_vars = defaults_vars
     ansible_vars.update(vars_vars)
     ansible_vars.update(distibution_vars)
     ansible_vars.update(molecule_vars)
-    # ansible_vars.update(host_vars)
+    ansible_vars.update(host_vars)
 
     templar = Templar(loader=DataLoader(), variables=ansible_vars)
     result = templar.template(ansible_vars, fail_on_undefined=False)
@@ -100,85 +102,27 @@ def get_vars(host):
     return result
 
 
-def local_facts(host):
+def test_service_running_and_enabled(host, get_vars):
     """
-      return local facts
+      running service
     """
-    ansible_facts = host.ansible("setup").get("ansible_facts", {})
-    return ansible_facts.get("ansible_local").get("nextcloud")
+    service_name = get_vars.get("mariadb_service", "mariadb")
+
+    service = host.service(service_name)
+    assert service.is_running
+    assert service.is_enabled
 
 
-def test_directories(host, get_vars):
+def test_listening_socket(host, get_vars):
+    """
+    """
+    listening = host.socket.get_listening_sockets()
 
-    base_dir = get_vars.get("nextcloud_install_base_directory")
-    version = local_facts(host).get("version")
+    for i in listening:
+        print(i)
 
-    dirs = [
-        base_dir,
-        f"{base_dir}/nextcloud/{version}",
-        f"{base_dir}/nextcloud/config",
-        f"{base_dir}/nextcloud/server/apps",
-        f"{base_dir}/nextcloud/server/core",
-        f"{base_dir}/nextcloud/server/config",
-        f"{base_dir}/nextcloud/server/lib",
-        f"{base_dir}/nextcloud/server/themes",
-        f"{base_dir}/nextcloud/server/updater",
-    ]
+    bind_address = get_vars.get("mariadb_config_mysqld").get("bind-address", "127.0.0.1")
+    bind_port = get_vars.get("mariadb_config_mysqld").get("port", 3306)
 
-    # if 'latest' in install_dir:
-    #     install_dir = install_dir.replace('latest', version)
-
-    for _dir in dirs:
-        f = host.file(_dir)
-        assert f.is_directory
-
-
-def test_data_directory(host, get_vars):
-
-    nc_defaults = get_vars.get("nextcloud_defaults", {})
-    data_directory = nc_defaults.get("data_directory")
-
-    f = host.file(data_directory)
-    assert f.is_directory
-
-
-def test_files(host, get_vars):
-
-    base_dir = get_vars.get("nextcloud_install_base_directory")
-
-    files = [
-        f"{base_dir}/nextcloud/server/occ",
-        f"{base_dir}/nextcloud/server/config/config.php",
-        f"{base_dir}/nextcloud/server/config/ansible.json",
-        f"{base_dir}/nextcloud/server/core/register_command.php",
-        f"{base_dir}/nextcloud/server/core/signature.json",
-        f"{base_dir}/nextcloud/config/config.php",
-        f"{base_dir}/nextcloud/config/config.json",
-        f"{base_dir}/nextcloud/config/ansible.json",
-    ]
-
-    for _file in files:
-        f = host.file(_file)
-        assert f.is_file
-
-
-def test_links_to_server(host, get_vars):
-
-    base_dir = get_vars.get("nextcloud_install_base_directory")
-
-    install_dir = f"{base_dir}/nextcloud/server"
-
-    f = host.file(install_dir)
-    assert f.is_symlink
-
-
-def test_links_to_config(host, get_vars):
-
-    base_dir = get_vars.get("nextcloud_install_base_directory")
-    version = local_facts(host).get("version")
-
-    install_dir = f"{base_dir}/nextcloud/{version}/config"
-
-    f = host.file(install_dir)
-    assert f.is_symlink
-
+    socket = host.socket(f"tcp://{bind_address}:{bind_port}")
+    assert socket.is_listening

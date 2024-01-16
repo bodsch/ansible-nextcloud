@@ -6,7 +6,7 @@ Description         = Nextcloud cron.php job
 
 [Service]
 User                = {{ nextcloud_owner }}
-ExecCondition       = php -f {{ nextcloud_install_base_directory }}/server/occ status --exit-code
-ExecStart           = /usr/bin/php -f {{ nextcloud_install_base_directory }}/server/cron.php
+ExecCondition       = php -f {{ nextcloud_install_base_directory }}/nextcloud/server/occ status --exit-code
+ExecStart           = /usr/bin/php -f {{ nextcloud_install_base_directory }}/nextcloud/server/cron.php
 
 KillMode            = process

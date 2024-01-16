@@ -1,6 +1,6 @@
 ---
 
-php_version: "8"
+php_version: "8" # .3"
 
 php_enable_php_fpm: true
 
@@ -53,11 +53,21 @@ php_modules:
       opcache.revalidate_freq=1
       opcache.max_file_size=0
   - name: pdo_mysql
-    enabled: false
+    enabled: true
     priority: 20
     content: |
       extension=pdo_mysql.so
       pdo_mysql.cache_size = 2000
+  - name: pdo_sqlite
+    enabled: false
+    priority: 20
+    content: |
+      extension=pdo_sqlite.so
+  - name: sqlite3
+    enabled: false
+    priority: 20
+    content: |
+      extension=sqlite3
   - name: gd
     enabled: true
     priority: 20
@@ -75,12 +85,6 @@ php_modules:
     priority: 20
     content: |
       extension=xmlrpc
-  - name: sqlite3
-    enabled: true
-    priority: 20
-    content: |
-      extension=sqlite3
-      extension=pdo_sqlite
   - name: gettext
     enabled: true
     priority: 20

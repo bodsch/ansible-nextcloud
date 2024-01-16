@@ -26,24 +26,11 @@
         owner: "{{ nextcloud_owner }}"
         group: "{{ nextcloud_group }}"
 
-# - name: check nextcloud for installation
-#   nextcloud_occ:
-#     command: "check"
-#     owner: "{{ nextcloud_owner }}"
-#     working_dir: "{{ nextcloud_install_base_directory }}/server"
-#   register: nc_status
-#
-# - name: installation state  # noqa no-handler
-#   ansible.builtin.debug:
-#     msg: "{{ nc_status.msg }}"
-#   when:
-#     - nc_status.failed
-
 - name: install nextcloud with base configuration
   nextcloud_occ:
     command: "maintenance:install"
     owner: "{{ nextcloud_owner }}"
-    working_dir: "{{ nextcloud_install_base_directory }}/server"
+    working_dir: "{{ nextcloud_install_base_directory }}/nextcloud/server"
     data_dir: "{{ nextcloud_defaults.data_directory }}"
     database:
       type: "{{ nextcloud_database.type }}"
@@ -69,9 +56,9 @@
     - nextcloud_defaults.data_directory is defined
     - nextcloud_defaults.data_directory | string | length > 0
   block:
-    - name: sync {{ nextcloud_install_base_directory }}/server/data to {{ nextcloud_defaults.data_directory }}
+    - name: sync {{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/data to {{ nextcloud_defaults.data_directory }}
       bodsch.core.sync_directory:
-        source_directory: "{{ nextcloud_install_base_directory }}/server/data"
+        source_directory: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/data"
         destination_directory: "{{ nextcloud_defaults.data_directory }}"
         arguments:
           verbose: true
@@ -89,7 +76,7 @@
 
 - name: write nextcloud import configuration
   nextcloud_config:
-    working_dir: "{{ nextcloud_install_base_directory }}/server"
+    working_dir: "{{ nextcloud_install_base_directory }}/nextcloud/server"
     owner: "{{ nextcloud_owner }}"
     group: "{{ nextcloud_group }}"
     diff_output: false

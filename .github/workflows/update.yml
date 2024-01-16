@@ -1,21 +1,21 @@
 ---
 
-name: update nextcloud
+name: update nextcloud (unsupported)
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - "CI"
-    types:
-      - completed
+  # workflow_run:
+  #   workflows:
+  #     - "CI"
+  #   types:
+  #     - completed
 
 defaults:
   run:
     working-directory: 'ansible-nextcloud'
 
 jobs:
-  deb:
+  debian:
     name: "${{ matrix.image }} / ansible: ${{ matrix.ansible-version }}"
     runs-on: ubuntu-20.04
     if: ${{ github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}

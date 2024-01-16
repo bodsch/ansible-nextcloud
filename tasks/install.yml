@@ -1,24 +1,5 @@
 ---
 
-# - name: get version of installed php-fpm
-#   bodsch.core.package_version:
-#     package_name: php-fpm
-#     state: installed
-#   register: _php_version
-#
-# - name: d
-#   debug:
-#     msg: "{{ _php_version }}"
-#
-# - name: define php version
-#   ansible.builtin.set_fact:
-#     php_version: "{{ _php_version.available.platform_version }}"
-#   # available:
-#   #   full_version: '8.3'
-#   #   major_version: '8'
-#   #   platform_version: '8.3'
-#   #   version_string_compressed: '83'
-
 - name: merge dependencies between defaults and custom
   ansible.builtin.set_fact:
     nextcloud_dependencies: "{{ nextcloud_dependencies + nextcloud_packages }}"
@@ -66,132 +47,6 @@
     name: "{{ nextcloud_dependencies + nextcloud_database_dependencies }}"
     state: present
 
-- name: detect installed nextcloud
-  ansible.builtin.stat:
-    path: "{{ nextcloud_install_base_directory }}/nextcloud-{{ nextcloud_version }}/lib/versioncheck.php"
-    get_checksum: false
-    get_mime: false
-    get_attributes: false
-  register: __stat_present_nextcloud
-  changed_when: not __stat_present_nextcloud.stat.exists
-
-- name: detect type of {{ nextcloud_install_base_directory }}/server
-  ansible.builtin.stat:
-    path: "{{ nextcloud_install_base_directory }}/server"
-    get_checksum: false
-    get_attributes: false
-  register: __stat_share_nextcloud
-
-# this should be a link!
-- name: remove directory '{{ nextcloud_install_base_directory }}'
-  ansible.builtin.file:
-    state: absent
-    path: "{{ nextcloud_install_base_directory }}/server"
-  when:
-    - __stat_share_nextcloud.stat is defined
-    - __stat_share_nextcloud.stat.isdir | default('true')
-
-- name: install nextcloud
-  when:
-    - not __stat_present_nextcloud.stat.exists
-  block:
-    - name: create remote temp directory
-      ansible.builtin.file:
-        path: "{{ nextcloud_remote_tmp_directory }}"
-        state: directory
-        mode: "0755"
-      when:
-        - not nextcloud_direct_download
-
-    - name: deploy application archiv
-      ansible.builtin.copy:
-        src: "{{ nextcloud_local_tmp_directory }}/{{ nextcloud_release.file }}"
-        dest: "{{ nextcloud_remote_tmp_directory }}/"
-        mode: "0700"
-
-    - name: create remote install directory
-      ansible.builtin.file:
-        state: directory
-        path: "{{ nextcloud_install_base_directory }}/nextcloud-{{ nextcloud_version }}"
-        owner: "{{ nextcloud_owner }}"
-        group: "{{ nextcloud_group }}"
-        mode: "0755"
-
-    - name: extract nextcloud archive
-      ansible.builtin.unarchive:
-        src: "{{ nextcloud_remote_tmp_directory }}/{{ nextcloud_release.file }}"
-        dest: "{{ nextcloud_install_base_directory }}/nextcloud-{{ nextcloud_version }}/"
-        owner: "{{ nextcloud_owner }}"
-        group: "{{ nextcloud_group }}"
-        mode: "0755"
-        remote_src: true
-        extra_opts:
-          - --strip-components=1
-      notify:
-        - restart php-fpm
-
-    - name: check nextcloud for installation
-      nextcloud_occ:
-        command: "check"
-        owner: "{{ nextcloud_owner }}"
-        working_dir: "{{ nextcloud_install_base_directory }}/nextcloud-{{ nextcloud_version }}"
-      register: nc_status
-
-    - name: validate state  # noqa no-handler
-      ansible.builtin.debug:
-        msg: "{{ nc_status.msg }}"
-      when:
-        - nc_status.failed
-
-  rescue:
-    - name: remove installation directory
-      ansible.builtin.file:
-        state: absent
-        path: "{{ nextcloud_install_base_directory }}/nextcloud-{{ nextcloud_version }}"
-
-    - name: remove link to installation directory
-      ansible.builtin.file:
-        state: absent
-        path: "{{ nextcloud_install_base_directory }}/nextcloud"
-
-    - name: remove remote cahce directory
-      ansible.builtin.file:
-        state: absent
-        path: "/var/cache/ansible/nextcloud/facts.checksum"
-
-    - name: exit with fail
-      ansible.builtin.fail:
-        msg:
-          - "Error while installing of nextcloud!"
-          - "{{ nc_status.msg }}"
-
-- name: enable config write
-  ansible.builtin.file:
-    state: directory
-    mode: 0777
-    owner: "{{ nextcloud_owner }}"
-    group: "{{ nextcloud_group }}"
-    path: "{{ nextcloud_install_base_directory }}/nextcloud-{{ nextcloud_version }}/config"
-
-- name: create link for nextcloud-version {{ nextcloud_version }} to {{ nextcloud_install_base_directory }}/server
-  ansible.builtin.file:
-    src: '{{ nextcloud_install_base_directory }}/nextcloud-{{ nextcloud_version }}'
-    dest: '{{ nextcloud_install_base_directory }}/server'
-    owner: "{{ nextcloud_owner }}"
-    group: "{{ nextcloud_group }}"
-    mode: "0755"
-    state: link
-    force: true
-  notify:
-    - restart php-fpm
-
-- name: create custom fact file
-  bodsch.core.facts:
-    name: nextcloud
-    facts:
-      version: "{{ nextcloud_version }}"
-      instande_id: "{{ nextcloud_instande_id }}"
-
 - name: python support
   when:
     - nextcloud_python_packages is defined
@@ -233,5 +88,190 @@
         msg: "{{ pip_install.msg }}"
       when:
         - pip_install.failed
+
+- name: detect installed nextcloud
+  ansible.builtin.stat:
+    path: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/lib/versioncheck.php"
+    get_checksum: false
+    get_mime: false
+    get_attributes: false
+  register: __stat_present_nextcloud
+  changed_when: not __stat_present_nextcloud.stat.exists
+
+- name: detect type of {{ nextcloud_install_base_directory }}/nextcloud/server
+  ansible.builtin.stat:
+    path: "{{ nextcloud_install_base_directory }}/nextcloud/server"
+    get_checksum: false
+    get_attributes: false
+  register: __stat_share_nextcloud
+
+# this should be a link!
+- name: remove directory '{{ nextcloud_install_base_directory }}'
+  ansible.builtin.file:
+    state: absent
+    path: "{{ nextcloud_install_base_directory }}/nextcloud/server"
+  when:
+    - __stat_share_nextcloud.stat is defined
+    - __stat_share_nextcloud.stat.isdir | default('true')
+
+- name: install nextcloud
+  when:
+    - not __stat_present_nextcloud.stat.exists
+  block:
+    - name: create remote temp directory
+      ansible.builtin.file:
+        path: "{{ nextcloud_remote_tmp_directory }}"
+        state: directory
+        mode: "0755"
+      when:
+        - not nextcloud_direct_download
+
+    - name: deploy application archiv
+      ansible.builtin.copy:
+        src: "{{ nextcloud_local_tmp_directory }}/{{ nextcloud_release.file }}"
+        dest: "{{ nextcloud_remote_tmp_directory }}/"
+        mode: "0700"
+
+    - name: create remote install directory
+      ansible.builtin.file:
+        state: directory
+        path: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}"
+        owner: "{{ nextcloud_owner }}"
+        group: "{{ nextcloud_group }}"
+        mode: "0755"
+
+    - name: create remote config directory
+      ansible.builtin.file:
+        state: directory
+        path: "{{ nextcloud_install_base_directory }}/nextcloud/config"
+        owner: "{{ nextcloud_owner }}"
+        group: "{{ nextcloud_group }}"
+        mode: "0755"
+
+    - name: extract nextcloud archive
+      ansible.builtin.unarchive:
+        src: "{{ nextcloud_remote_tmp_directory }}/{{ nextcloud_release.file }}"
+        dest: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/"
+        owner: "{{ nextcloud_owner }}"
+        group: "{{ nextcloud_group }}"
+        mode: "0755"
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+      notify:
+        - restart php-fpm
+
+    - name: detect type of nextcloud config
+      ansible.builtin.stat:
+        dest: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
+        get_checksum: false
+        get_attributes: false
+      register: __stat_nextcloud_config
+
+    - name: detect nextcloud config.json
+      ansible.builtin.stat:
+        dest: "{{ nextcloud_install_base_directory }}/nextcloud/config/config.json"
+        get_checksum: false
+        get_attributes: false
+      register: __stat_nextcloud_config_json
+
+
+    - name: config handler
+      when:
+        - __stat_nextcloud_config.stat.exists
+        - __stat_nextcloud_config_json.stat.isdir | default('true')
+      block:
+        - name: rename default config directory
+          ansible.builtin.command: >
+            mv
+              "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
+              "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config_DIST"
+          args:
+            removes: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
+            creates: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config_DIST"
+
+        - name: create link to {{ nextcloud_install_base_directory }}/nextcloud/config
+          ansible.builtin.file:
+            src: "{{ nextcloud_install_base_directory }}/nextcloud/config"
+            dest: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
+            owner: "{{ nextcloud_owner }}"
+            group: "{{ nextcloud_group }}"
+            mode: "0755"
+            state: link
+            force: true
+
+        - name: syncronize config for first run
+          bodsch.core.sync_directory:
+            source_directory: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config_DIST"
+            destination_directory: "{{ nextcloud_install_base_directory }}/nextcloud/config"
+            arguments:
+              verbose: true
+              purge: false
+          when:
+            - __stat_nextcloud_config_json.stat.exists is defined
+            - not __stat_nextcloud_config_json.stat.exists
+
+    - name: check nextcloud for installation
+      nextcloud_occ:
+        command: "check"
+        owner: "{{ nextcloud_owner }}"
+        working_dir: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}"
+      register: nc_status
+
+    - name: validate state  # noqa no-handler
+      ansible.builtin.debug:
+        msg: "{{ nc_status.msg }}"
+      when:
+        - nc_status.failed
+
+  rescue:
+    - name: remove installation directory
+      ansible.builtin.file:
+        state: absent
+        path: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}"
+      no_log: true
+
+    - name: remove link to installation directory
+      ansible.builtin.file:
+        state: absent
+        path: "{{ nextcloud_install_base_directory }}/nextcloud/server"
+
+    - name: remove remote cchecksum file
+      ansible.builtin.file:
+        state: absent
+        path: "/var/cache/ansible/nextcloud/facts.checksum"
+
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg:
+          - "Error while installing of nextcloud!"
+          - "{{ nc_status.msg }}"
+
+- name: enable config write
+  ansible.builtin.file:
+    state: directory
+    mode: 0777
+    owner: "{{ nextcloud_owner }}"
+    group: "{{ nextcloud_group }}"
+    path: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
+
+- name: create link for nextcloud-version {{ nextcloud_version }} to {{ nextcloud_install_base_directory }}/nextcloud/server
+  ansible.builtin.file:
+    src: '{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}'
+    dest: '{{ nextcloud_install_base_directory }}/nextcloud/server'
+    owner: "{{ nextcloud_owner }}"
+    group: "{{ nextcloud_group }}"
+    mode: "0755"
+    state: link
+    force: true
+  notify:
+    - restart php-fpm
+
+- name: create custom fact file
+  bodsch.core.facts:
+    name: nextcloud
+    facts:
+      version: "{{ nextcloud_version }}"
+      instande_id: "{{ nextcloud_instande_id }}"
 
 ...

@@ -3,7 +3,7 @@
 - name: nextcloud apps
   nextcloud_apps:
     apps: "{{ nextcloud_apps }}"
-    working_dir: "{{ nextcloud_install_base_directory }}/server"
+    working_dir: "{{ nextcloud_install_base_directory }}/nextcloud/server"
   register: nc_status
 
 ...

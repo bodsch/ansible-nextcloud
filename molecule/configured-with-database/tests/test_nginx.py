@@ -100,85 +100,21 @@ def get_vars(host):
     return result
 
 
-def local_facts(host):
+def test_service(host):
     """
-      return local facts
+        is service running and enabled
     """
-    ansible_facts = host.ansible("setup").get("ansible_facts", {})
-    return ansible_facts.get("ansible_local").get("nextcloud")
+    service = host.service("nginx")
+
+    assert service.is_enabled
+    assert service.is_running
 
 
-def test_directories(host, get_vars):
+def test_fpm_pools(host, get_vars):
+    """
+        test sockets
+    """
+    for i in host.socket.get_listening_sockets():
+        print(i)
 
-    base_dir = get_vars.get("nextcloud_install_base_directory")
-    version = local_facts(host).get("version")
-
-    dirs = [
-        base_dir,
-        f"{base_dir}/nextcloud/{version}",
-        f"{base_dir}/nextcloud/config",
-        f"{base_dir}/nextcloud/server/apps",
-        f"{base_dir}/nextcloud/server/core",
-        f"{base_dir}/nextcloud/server/config",
-        f"{base_dir}/nextcloud/server/lib",
-        f"{base_dir}/nextcloud/server/themes",
-        f"{base_dir}/nextcloud/server/updater",
-    ]
-
-    # if 'latest' in install_dir:
-    #     install_dir = install_dir.replace('latest', version)
-
-    for _dir in dirs:
-        f = host.file(_dir)
-        assert f.is_directory
-
-
-def test_data_directory(host, get_vars):
-
-    nc_defaults = get_vars.get("nextcloud_defaults", {})
-    data_directory = nc_defaults.get("data_directory")
-
-    f = host.file(data_directory)
-    assert f.is_directory
-
-
-def test_files(host, get_vars):
-
-    base_dir = get_vars.get("nextcloud_install_base_directory")
-
-    files = [
-        f"{base_dir}/nextcloud/server/occ",
-        f"{base_dir}/nextcloud/server/config/config.php",
-        f"{base_dir}/nextcloud/server/config/ansible.json",
-        f"{base_dir}/nextcloud/server/core/register_command.php",
-        f"{base_dir}/nextcloud/server/core/signature.json",
-        f"{base_dir}/nextcloud/config/config.php",
-        f"{base_dir}/nextcloud/config/config.json",
-        f"{base_dir}/nextcloud/config/ansible.json",
-    ]
-
-    for _file in files:
-        f = host.file(_file)
-        assert f.is_file
-
-
-def test_links_to_server(host, get_vars):
-
-    base_dir = get_vars.get("nextcloud_install_base_directory")
-
-    install_dir = f"{base_dir}/nextcloud/server"
-
-    f = host.file(install_dir)
-    assert f.is_symlink
-
-
-def test_links_to_config(host, get_vars):
-
-    base_dir = get_vars.get("nextcloud_install_base_directory")
-    version = local_facts(host).get("version")
-
-    install_dir = f"{base_dir}/nextcloud/{version}/config"
-
-    f = host.file(install_dir)
-    assert f.is_symlink
-
+    assert host.socket("tcp://0.0.0.0:80").is_listening

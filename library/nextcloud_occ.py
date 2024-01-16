@@ -88,7 +88,12 @@ class NextcloudClient(object):
         if self.command == "maintenance:install":
             rc, installed, out, err = self.occ_check(check_installed=True)
             if rc == 0 and not installed:
-                return self.occ_maintenance_install()
+                result_install = self.occ_maintenance_install()
+                result_status = self.occ_status()
+                self.module.log(f" status: {result_status}")
+
+                return result_install
+
             else:
                 return dict(
                     failed=False,
@@ -106,7 +111,7 @@ class NextcloudClient(object):
         """
             sudo -u www-data php occ check
         """
-        # self.module.log(msg=f"occ_check({check_installed})")
+        self.module.log(msg=f"occ_check(check_installed={check_installed})")
 
         args = []
         args += self.occ_base_args
@@ -129,6 +134,7 @@ class NextcloudClient(object):
         # self.module.log(msg=f" err: '{err.strip()}'")
 
         if not check_installed:
+            self.module.log(msg=f"= rc: {rc}, out: {out.strip()}, err: {err.strip()}")
             return rc, out, err
 
         installed = False
@@ -155,6 +161,7 @@ class NextcloudClient(object):
             if exception:
                 err = exception.group("exception")
 
+        self.module.log(msg=f"= rc: {rc}, installed: {installed}, out: {out.strip()}, err: {err.strip()}")
         return (rc, installed, out, err)
 
     def occ_status(self):
@@ -203,7 +210,7 @@ class NextcloudClient(object):
                 --admin-user='admin'
                 --admin-pass='admin'
         """
-        # self.module.log(msg="occ_maintenance_install()")
+        self.module.log(msg="occ_maintenance_install()")
         _failed = True
         _changed = False
 
@@ -266,7 +273,8 @@ class NextcloudClient(object):
             patterns = [
                 '.*Command "maintenance:install" is not defined.*',
                 'Database .* is not supported.',
-                'Following symlinks is not allowed'
+                'Following symlinks is not allowed',
+                'Username is invalid because files already exist for this user'
             ]
             error = None
 

@@ -1,5 +1,5 @@
 ---
-name: nextcloud with sqlite and custom config
+name: nextcloud with mariadb and custom config
 
 on:
   workflow_dispatch:
@@ -28,7 +28,7 @@ jobs:
         ansible-version:
           - '6.7'
         scenario:
-          - configured
+          - configured-with-database
 
     steps:
       - name: check out the codebase.
