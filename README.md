@@ -126,12 +126,12 @@ To create the Background Job.
 
 | Variable       | default    | Description |
 | :---           | :----      | :----       |
-| `type`         | `webcron`  | alternative and currently not supported: `webcron`, `ajax`. systemd User can create an system timer with `systemd` insteed `cron` |
+| `type`         | `webcron`  | alternative and currently supported: `cron`, `webcron`, `ajax`.<br>systemd User can create an system timer with `systemd` insteed `cron` |
 | `daemon`       | ` `        | the named cron package (Will be installed) |
-| `enabled`      | `false`    | enable cron Background Jobs.            |
-| `cron.minute`  |            |             |
-| `cron.hour`    |            |             |
-| `cron.weekday` |            |             |
+| `enabled`      | `false`    | enable cron Background Jobs.    |
+| `cron.minute`  | ` `        | cron configuration: *minute*    |
+| `cron.hour`    | ` `        | cron configuration: *hour*      |
+| `cron.weekday` | ` `        | cron configuration: *weekday*   |
 
 ```yaml
 nextcloud_background_jobs:
