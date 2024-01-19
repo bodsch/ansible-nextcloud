@@ -211,7 +211,6 @@ nextcloud_defaults_defaults:
       url: ""                                                   # 'https://apps.nextcloud.com/api/v1'
     allowlist: []
     paths: []
-
     #  - path: '/var/www/nextcloud/apps'
     #    url: '/apps'
     #    writable: true
@@ -353,7 +352,7 @@ nextcloud_defaults_defaults:
   query_log_file: ""
 
 nextcloud_defaults_release:
-  download_url: https://download.nextcloud.com/server/releases
+  download_url: "https://download.nextcloud.com/server/{{ nextcloud_release_type }}"
   file: "nextcloud-{{ nextcloud_version }}.tar.bz2"
   checksum: "nextcloud-{{ nextcloud_version }}.tar.bz2.sha256"
 

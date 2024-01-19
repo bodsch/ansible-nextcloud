@@ -1,0 +1,14 @@
+---
+
+- name: php-fpm
+  src: https://github.com/bodsch/ansible-php
+  scm: git
+
+- name: nginx
+  src: https://github.com/bodsch/ansible-nginx
+  scm: git
+
+- name: composer
+  src: geerlingguy.composer
+
+...

@@ -33,6 +33,16 @@
   when:
     - nextcloud_main_version is version('2', '==', strict=False)
 
+- name: assert release type '{{ nextcloud_release_type }}' for version {{ nextcloud_version }}
+  ansible.builtin.assert:
+    that:
+      - nextcloud_release_type is defined
+      - nextcloud_release_type is in ["releases", "prereleases", "daily"]
+    msg: "The release type must be either 'releases', or 'prereleases', or 'daily'! found: {{ nextcloud_release_type }}"
+    quiet: true
+  when:
+    - nextcloud_main_version is version('2', '==', strict=False)
+
 - name: include OS specific configuration
   ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
   vars:
