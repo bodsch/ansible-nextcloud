@@ -2,6 +2,14 @@
 
 nextcloud_version: 28.0.0
 
+# switch between
+# releases      : https://download.nextcloud.com/server/releases/nextcloud-28.0.1.zip
+# prereleases   : https://download.nextcloud.com/server/prereleases/nextcloud-28.0.2rc1.zip
+# daily         : https://download.nextcloud.com/server/daily/nextcloud-28-daily-2024-01-18.zip
+#                 https://download.nextcloud.com/server/daily/nextcloud-master-daily-2024-01-18.zip
+# default = releases
+nextcloud_release_type: releases
+
 nextcloud_direct_download: false
 
 nextcloud_release: {}

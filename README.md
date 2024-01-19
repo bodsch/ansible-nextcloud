@@ -17,6 +17,14 @@ Ansible Collections
 ```yaml
 nextcloud_version: 26.0.5
 
+# switch between
+# releases      : https://download.nextcloud.com/server/releases/nextcloud-28.0.1.zip
+# prereleases   : https://download.nextcloud.com/server/prereleases/nextcloud-28.0.2rc1.zip
+# daily         : https://download.nextcloud.com/server/daily/nextcloud-28-daily-2024-01-18.zip
+#                 https://download.nextcloud.com/server/daily/nextcloud-master-daily-2024-01-18.zip
+# default = releases
+nextcloud_release_type: releases
+
 nextcloud_direct_download: false
 
 nextcloud_release: {}
@@ -64,13 +72,13 @@ nextcloud_php_daemon:
   name: "{{ php_fpm_daemon }}"
 
 nextcloud_background_jobs:
-  type: cron          # alternative and currently not supported: webcron | ajax , maybe systemd
+  type: cron          # alternative: webcron | ajax and systemd
   daemon: ""          # "{{ 'cron' if ansible_os_family | lower == 'debian' else 'cronie' }}"
   state: enabled      # ['enabled', 'disabled']
   cron:
-    minute: ""
-    hour: ""
-    weekday: ""
+    minute: ""        # '*/5'
+    hour: ""          # '*'
+    weekday: ""       # '*'
 ```
 
 ### `nextcloud_admin`
@@ -126,18 +134,18 @@ To create the Background Job.
 
 | Variable       | default    | Description |
 | :---           | :----      | :----       |
-| `type`         | `webcron`  | alternative and currently supported: `cron`, `webcron`, `ajax`.<br>systemd User can create an system timer with `systemd` insteed `cron` |
+| `type`         | `webcron`  | alternative: `cron`, `webcron`, `ajax`.<br>systemd User can create an system timer with `systemd` insteed `cron` |
 | `daemon`       | ` `        | the named cron package (Will be installed) |
 | `enabled`      | `false`    | enable cron Background Jobs.    |
-| `cron.minute`  | ` `        | cron configuration: *minute*    |
-| `cron.hour`    | ` `        | cron configuration: *hour*      |
-| `cron.weekday` | ` `        | cron configuration: *weekday*   |
+| `cron.minute`  | `*/5`      | cron configuration: *minute*    |
+| `cron.hour`    | `*`        | cron configuration: *hour*      |
+| `cron.weekday` | `*`        | cron configuration: *weekday*   |
 
 ```yaml
 nextcloud_background_jobs:
-  type: cron          # alternative and currently not supported: webcron | ajax , maybe systemd
-  daemon: ""          # "{{ 'cron' if ansible_os_family | lower == 'debian' else 'cronie' }}"
-  enabled: false      # ['true', 'false']
+  type: cron
+  daemon: ""
+  enabled: false
   cron:
     minute: ""
     hour: ""
