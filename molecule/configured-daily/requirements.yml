@@ -3,12 +3,15 @@
 - name: php-fpm
   src: https://github.com/bodsch/ansible-php
   scm: git
+  version: 2.3.0
 
 - name: nginx
   src: https://github.com/bodsch/ansible-nginx
   scm: git
+  version: 0.25.1
 
 - name: composer
   src: geerlingguy.composer
+  version: 1.9.2
 
 ...
