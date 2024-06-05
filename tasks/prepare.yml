@@ -63,7 +63,7 @@
 
 - name: define nextcloud user
   ansible.builtin.set_fact:
-    nextcloud_owner: "{{ nextcloud_user_default }}"
+    nextcloud_owner: "{{ nextcloud_owner_default }}"
   when:
     - not nextcloud_owner is defined or nextcloud_owner | length == 0
 

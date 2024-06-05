@@ -8,8 +8,8 @@
     - name: configure nextcloud background jobs
       nextcloud_occ:
         command: "background:webcron"
-        owner: "{{ nextcloud_owner }}"
         working_dir: "{{ nextcloud_install_base_directory }}/nextcloud/server"
+        owner: "{{ nextcloud_owner }}"
       register: nc_status
 
     - name: remove cron jobs
@@ -40,8 +40,8 @@
     - name: configure nextcloud background jobs
       nextcloud_occ:
         command: "background:{{ 'cron' if nextcloud_background_jobs.type == 'systemd' else nextcloud_background_jobs.type }}"
-        owner: "{{ nextcloud_owner }}"
         working_dir: "{{ nextcloud_install_base_directory }}/nextcloud/server"
+        owner: "{{ nextcloud_owner }}"
       register: nc_status
 
     - name: remove cron file

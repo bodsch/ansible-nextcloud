@@ -29,8 +29,8 @@
 - name: install nextcloud with base configuration
   nextcloud_occ:
     command: "maintenance:install"
-    owner: "{{ nextcloud_owner }}"
     working_dir: "{{ nextcloud_install_base_directory }}/nextcloud/server"
+    owner: "{{ nextcloud_owner }}"
     data_dir: "{{ nextcloud_defaults.data_directory }}"
     database:
       type: "{{ nextcloud_database.type }}"

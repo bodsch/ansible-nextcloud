@@ -161,61 +161,11 @@
       notify:
         - restart php-fpm
 
-    - name: detect type of nextcloud config
-      ansible.builtin.stat:
-        dest: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
-        get_checksum: false
-        get_attributes: false
-      register: __stat_nextcloud_config
-
-    - name: detect nextcloud config.json
-      ansible.builtin.stat:
-        dest: "{{ nextcloud_install_base_directory }}/nextcloud/config/config.json"
-        get_checksum: false
-        get_attributes: false
-      register: __stat_nextcloud_config_json
-
-
-    - name: config handler
-      when:
-        - __stat_nextcloud_config.stat.exists
-        - __stat_nextcloud_config_json.stat.isdir | default('true')
-      block:
-        - name: rename default config directory
-          ansible.builtin.command: >
-            mv
-              "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
-              "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config_DIST"
-          args:
-            removes: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
-            creates: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config_DIST"
-
-        - name: create link to {{ nextcloud_install_base_directory }}/nextcloud/config
-          ansible.builtin.file:
-            src: "{{ nextcloud_install_base_directory }}/nextcloud/config"
-            dest: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
-            owner: "{{ nextcloud_owner }}"
-            group: "{{ nextcloud_group }}"
-            mode: "0755"
-            state: link
-            force: true
-
-        - name: syncronize config for first run
-          bodsch.core.sync_directory:
-            source_directory: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config_DIST"
-            destination_directory: "{{ nextcloud_install_base_directory }}/nextcloud/config"
-            arguments:
-              verbose: true
-              purge: false
-          when:
-            - __stat_nextcloud_config_json.stat.exists is defined
-            - not __stat_nextcloud_config_json.stat.exists
-
     - name: check nextcloud for installation
       nextcloud_occ:
         command: "check"
-        owner: "{{ nextcloud_owner }}"
         working_dir: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}"
+        owner: "{{ nextcloud_owner }}"
       register: nc_status
 
     - name: validate state  # noqa no-handler
@@ -247,6 +197,60 @@
           - "Error while installing of nextcloud!"
           - "{{ nc_status.msg }}"
 
+- name: detect type of nextcloud config
+  ansible.builtin.stat:
+    dest: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
+    get_checksum: false
+    get_attributes: false
+  register: __stat_nextcloud_config
+
+- name: nextcloud config
+  when:
+    - __stat_nextcloud_config.stat.exists
+    - __stat_nextcloud_config.stat.isdir | default('true')
+  block:
+    - name: config handler
+      when:
+        - __stat_nextcloud_config.stat.exists
+        - __stat_nextcloud_config.stat.isdir | default('true')
+      block:
+        - name: rename default config directory
+          ansible.builtin.command: >
+            mv
+              "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
+              "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config_DIST"
+          args:
+            removes: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
+            creates: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config_DIST"
+
+        - name: create link to {{ nextcloud_install_base_directory }}/nextcloud/config
+          ansible.builtin.file:
+            src: "{{ nextcloud_install_base_directory }}/nextcloud/config"
+            dest: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
+            owner: "{{ nextcloud_owner }}"
+            group: "{{ nextcloud_group }}"
+            mode: "0755"
+            state: link
+            force: true
+
+    - name: detect nextcloud config.json
+      ansible.builtin.stat:
+        dest: "{{ nextcloud_install_base_directory }}/nextcloud/config/config.json"
+        get_checksum: false
+        get_attributes: false
+      register: __stat_nextcloud_config_json
+
+    - name: syncronize config for first run
+      bodsch.core.sync_directory:
+        source_directory: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config_DIST"
+        destination_directory: "{{ nextcloud_install_base_directory }}/nextcloud/config"
+        arguments:
+          verbose: true
+          purge: false
+      when:
+        - __stat_nextcloud_config_json.stat.exists is defined
+        - not __stat_nextcloud_config_json.stat.exists
+
 - name: enable config write
   ansible.builtin.file:
     state: directory
@@ -254,6 +258,7 @@
     owner: "{{ nextcloud_owner }}"
     group: "{{ nextcloud_group }}"
     path: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
+    recurse: true
 
 - name: create link for nextcloud-version {{ nextcloud_version }} to {{ nextcloud_install_base_directory }}/nextcloud/server
   ansible.builtin.file:

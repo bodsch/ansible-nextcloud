@@ -12,7 +12,7 @@ nextcloud_cache_directory: /var/cache/ansible/nextcloud
 
 nextcloud_remote_tmp_directory: "{{ nextcloud_cache_directory }}/{{ nextcloud_version }}"
 
-nextcloud_user_default: www-data
+nextcloud_owner_default: www-data
 
 nextcloud_dependencies:
   - unzip

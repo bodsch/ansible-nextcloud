@@ -4,15 +4,11 @@ role_name_check: 1
 
 dependency:
   name: galaxy
+  options:
+    ignore-errors: true
 
 driver:
   name: docker
-
-lint: |
-  set -e
-  yamllint .
-  ansible-lint .
-  flake8 .
 
 platforms:
   - name: instance

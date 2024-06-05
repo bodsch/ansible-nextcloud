@@ -1,6 +1,6 @@
 ---
 
-nextcloud_version: "28.0.1"
+nextcloud_version: "29.0.1"
 
 nextcloud_install_base_directory: /var/www
 

@@ -4,6 +4,7 @@
   nextcloud_apps:
     apps: "{{ nextcloud_apps }}"
     working_dir: "{{ nextcloud_install_base_directory }}/nextcloud/server"
+    owner: "{{ nextcloud_owner }}"
   register: nc_status
 
 ...
