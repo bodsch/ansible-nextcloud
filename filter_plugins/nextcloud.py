@@ -35,7 +35,7 @@ class FilterModule(object):
         """
         dirs = []
 
-        # display.v(f"- data : {data}")
+        display.v(f"- data : {data}")
 
         _directory_list = [
             "skeleton_directory",
@@ -46,9 +46,32 @@ class FilterModule(object):
         ]
 
         dirs = [dirs for keys, dirs in data.items() if keys in _directory_list]
-        dirs += [os.path.dirname(dirs) for keys, values in data.items() if keys in ["logging"] for k, dirs in values.items() if k in ["file"]]
+
+        logging_dirs = [
+            os.path.dirname(dirs) for keys, values in data.items()
+            if keys in ["logging"]
+            for k, dirs in values.items()
+            if k in ["file"]
+        ]
+
+        application_dirs = [
+            dirs for keys, values in data.items()
+            if keys in ["apps"]
+            for k, apps in values.items()
+            for app in apps
+            for i, dirs in app.items()
+            if i in ['path']
+        ]
+
+        dirs += logging_dirs
+        dirs += application_dirs
 
         dirs = list(set(dirs))
+        # remove empty elements
+        dirs = list(filter(None, dirs))
+
+        dirs.sort(reverse = False)
+
         display.v(f"= return : {dirs}")
 
         return dirs
