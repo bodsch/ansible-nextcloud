@@ -31,7 +31,7 @@ nginx_vhosts:
     listen:
       - 80
 
-    root_directory: "{{ nextcloud_install_base_directory }}/server"
+    root_directory: "{{ nextcloud_install_base_directory }}/nextcloud/server"
     root_directory_create: false
 
     index:

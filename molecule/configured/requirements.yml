@@ -8,10 +8,10 @@
 - name: nginx
   src: https://github.com/bodsch/ansible-nginx
   scm: git
-  version: 0.25.1
+  version: 0.26.0
 
 - name: composer
   src: geerlingguy.composer
-  version: 1.9.2
+  version: 1.9.3
 
 ...

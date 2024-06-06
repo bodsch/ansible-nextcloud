@@ -10,8 +10,8 @@ php_fpm_default_pool:
   delete: true
   name: www.conf
 
-php_packages:
-  - php-msgpack
+# php_packages:
+  # - php-msgpack
 
 php_fpm_pools:
   - name: worker-01
@@ -56,11 +56,11 @@ php_modules:
       opcache.revalidate_freq=1
       opcache.max_file_size=0
   # before memcached!
-  - name: msgpack
-    enabled: true
-    priority: 18
-    content: |
-      extension=msgpack
+  # - name: msgpack
+  #   enabled: true
+  #   priority: 18
+  #   content: |
+  #     extension=msgpack
   - name: pdo_mysql
     enabled: false
     priority: 20
@@ -105,7 +105,7 @@ php_modules:
     content: |
       extension=curl
   - name: memcached
-    enabled: true
+    enabled: false
     priority: 20
     content: |
       extension=memcached

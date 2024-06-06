@@ -21,6 +21,15 @@ nextcloud_defaults:
     file: '/var/log/nextcloud/nextcloud.log'
     logfile_audit: '/var/log/nextcloud/audit.log'
     level: 1
+  # not stable yet
+  # apps:
+  #   paths:
+  #     - path: '{{ nextcloud_install_base_directory }}/nextcloud/server/apps'
+  #       url: '/apps'
+  #       writable: false
+  #     - path: '{{ nextcloud_install_base_directory }}/nextcloud/apps-external'
+  #       url: '/apps-external'
+  #       writable: true
 
 nextcloud_background_jobs:
   type: 'systemd'
@@ -95,6 +104,6 @@ nextcloud_apps:
   - name: groupfolders
     state: enabled
   - name: recognize
-    state: absent
+    state: enabled
 
 ...
