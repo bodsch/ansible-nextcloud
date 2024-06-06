@@ -76,9 +76,9 @@ class NextcloudClient(object):
 
         if not os.path.exists(self._occ):
             return dict(
-                failed = True,
-                changed = False,
-                msg = "missing occ"
+                failed=True,
+                changed=False,
+                msg="missing occ"
             )
 
         rc, installed, out, err = self.occ_check()
@@ -163,9 +163,9 @@ class NextcloudClient(object):
                 msg += f" {err}"
 
                 return dict(
-                    failed = True,
-                    msg = msg,
-                    diff = _diff
+                    failed=True,
+                    msg=msg,
+                    diff=_diff
                 )
 
             else:
@@ -187,16 +187,16 @@ class NextcloudClient(object):
         shutil.rmtree(self.tmp_directory)
 
         return dict(
-            changed = changed,
-            failed = False,
-            msg = msg,
-            diff = _diff
+            changed=changed,
+            failed=False,
+            msg=msg,
+            diff=_diff
         )
 
     def config_opts(self):
 
         data = dict(
-            system = dict()
+            system=dict()
         )
 
         if validate(self.trusted_domains):
@@ -664,7 +664,7 @@ class NextcloudClient(object):
                 old_data = json.load(json_file)
 
         side_by_side = SideBySide(self.module, old_data, data)
-        diff_side_by_side = side_by_side.diff(width=140, left_title="  Original", right_title= "  Update")
+        diff_side_by_side = side_by_side.diff(width=140, left_title="  Original", right_title="  Update")
 
         return diff_side_by_side
 
@@ -903,21 +903,21 @@ def main():
         #     required=False,
         #     type=str
         # ),
-        owner = dict(
+        owner=dict(
             required=False,
             type=str,
-            default = "www-data"
+            default="www-data"
         ),
-        group = dict(
+        group=dict(
             required=False,
             type=str,
-            default = "www-data"
+            default="www-data"
         ),
-        config_parameters = dict(
+        config_parameters=dict(
             required=False,
             type=dict,
         ),
-        trusted_domains = dict(
+        trusted_domains=dict(
             required=False,
             type=list,
         ),
@@ -925,7 +925,7 @@ def main():
             required=False,
             type=dict
         ),
-        diff_output = dict(
+        diff_output=dict(
             required=False,
             type='bool',
             default=False

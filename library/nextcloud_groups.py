@@ -53,9 +53,9 @@ class NextcloudGroups(object):
 
         if not os.path.exists(self._occ):
             return dict(
-                failed = True,
-                changed = False,
-                msg = "missing occ"
+                failed=True,
+                changed=False,
+                msg="missing occ"
             )
 
         os.chdir(self.working_dir)
@@ -106,9 +106,9 @@ class NextcloudGroups(object):
         _state, _changed, _failed, state, changed, failed = results(self.module, result_state)
 
         result = dict(
-            changed = _changed,
-            failed = False,
-            state = result_state
+            changed=_changed,
+            failed=False,
+            state=result_state
         )
 
         return result
@@ -311,7 +311,10 @@ class NextcloudGroups(object):
         args.append("--output")
         args.append("json")
 
+        self.module.log(msg=f" args: '{args}'")
+
         rc, out, err = self.__exec(args, check_rc=False)
+
         out = json.loads(out)
 
         group_names = [x for x, _ in out.items()]
@@ -373,10 +376,10 @@ def main():
             required=True,
             type=str
         ),
-        owner = dict(
+        owner=dict(
             required=False,
             type=str,
-            default = "www-data"
+            default="www-data"
         ),
     )
 

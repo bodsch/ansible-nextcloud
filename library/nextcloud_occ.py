@@ -60,9 +60,9 @@ class NextcloudClient(object):
 
         if not os.path.exists(self._occ):
             return dict(
-                failed = True,
-                changed = False,
-                msg = "missing occ"
+                failed=True,
+                changed=False,
+                msg="missing occ"
             )
 
         os.chdir(self.working_dir)
@@ -83,6 +83,43 @@ class NextcloudClient(object):
                 return dict(
                     failed=True,
                     msg=out.replace("<br/>", " ")
+                )
+
+        if self.command == "status":
+            rc, installed, version_string, db_upgrade, err = self.occ_status()
+
+            if db_upgrade:
+                return dict(
+                    failed=False,
+                    upgrade=db_upgrade,
+                    msg=f"Nextcloud is in Version {version_string} installed, but need an Database upgrade."
+                )
+
+            if int(rc) == 0:
+                return dict(
+                    failed=False,
+                    upgrade=db_upgrade,
+                    msg=err
+                )
+            else:
+                return dict(
+                    failed=True,
+                    upgrade=db_upgrade,
+                    msg=err.replace("<br/>", " ")
+                )
+
+        if self.command == "upgrade":
+            rc, out, err = self.occ_upgrade()
+
+            if int(rc) == 0:
+                return dict(
+                    failed=False,
+                    msg=err
+                )
+            else:
+                return dict(
+                    failed=True,
+                    msg=err.replace("<br/>", " ")
                 )
 
         if self.command == "maintenance:install":
@@ -127,6 +164,8 @@ class NextcloudClient(object):
 
         """
             not installed: "Nextcloud is not installed - only a limited number of commands are available"
+            Nextcloud or one of the apps require upgrade - only a limited number of commands are available
+            Cannot write into "config" directory!
             installed: ''
         """
         # self.module.log(msg=f" rc : '{rc}'")
@@ -135,17 +174,37 @@ class NextcloudClient(object):
 
         if not check_installed:
             self.module.log(msg=f"= rc: {rc}, out: {out.strip()}, err: {err.strip()}")
+
+            if rc == 0:
+                pattern = re.compile(r"Nextcloud or one of the apps require upgrade.*", re.MULTILINE)
+                need_upgrade = re.search(pattern, err)
+
+                if need_upgrade:
+                    out = "Nextcloud or one of the apps require upgrade.\nYou may use your browser or the occ upgrade command to do the upgrade."
+                    rc = 1
+
             return rc, out, err
 
         installed = False
 
         if rc == 0:
+            pattern = re.compile(r"Nextcloud or one of the apps require upgrade.*", re.MULTILINE)
+            need_upgrade = re.search(pattern, err)
+
+            # self.module.log(msg=f" out: '{need_upgrade}'")
+            # self.module.log(msg=f" err: '{need_upgrade}' {type(need_upgrade)}")
+
+            if need_upgrade:
+                installed = False
+
+                self.occ_upgrade()
+
             pattern = re.compile(r"Nextcloud is not installed.*", re.MULTILINE)
             # installed_out = re.search(pattern_1, out)
             is_installed = re.search(pattern, err)
 
-            # self.module.log(msg=f" out: '{installed_out}'")
-            # self.module.log(msg=f" err: '{is_installed}' {type(is_installed)}")
+            self.module.log(msg=f" out: '{is_installed}'")
+            self.module.log(msg=f" err: '{is_installed}' {type(is_installed)}")
 
             if is_installed:
                 installed = False
@@ -164,6 +223,47 @@ class NextcloudClient(object):
         self.module.log(msg=f"= rc: {rc}, installed: {installed}, out: {out.strip()}, err: {err.strip()}")
         return (rc, installed, out, err)
 
+    def occ_upgrade(self):
+        """
+            db:add-missing-columns                 Add missing optional columns to the database tables
+            db:add-missing-indices                 Add missing indices to the database tables
+            db:add-missing-primary-keys
+        """
+        self.module.log(msg="occ_upgrade()")
+
+        args = []
+        args += self.occ_base_args
+
+        args.append("upgrade")
+        args.append("--no-ansi")
+        # args.append("--output")
+        # args.append("json")
+
+        self.module.log(msg=f" args: '{args}'")
+
+        rc, out, err = self.__exec(args, check_rc=False)
+
+        self.module.log(msg=f" rc : '{rc}'")
+        self.module.log(msg=f" out: '{out.strip()}'")
+        self.module.log(msg=f" err: '{err.strip()}'")
+
+        if rc == 0:
+            self.module.log(msg="okay?")
+
+            err = "The upgrade was successful."
+
+        else:
+            err = out.strip()
+
+            pattern = re.compile(r"An unhandled exception has been thrown:\n(?P<exception>.*)\n.*", re.MULTILINE)
+            exception = re.search(pattern, err)
+
+            if exception:
+                err = exception.group("exception")
+
+        self.module.log(msg=f"= rc: {rc}, out: {out.strip()}, err: {err.strip()}")
+        return (rc, out, err)
+
     def occ_status(self):
         """
             sudo -u www-data php occ status
@@ -180,12 +280,20 @@ class NextcloudClient(object):
         args.append("--output")
         args.append("json")
 
+        self.module.log(msg=f" args: '{args}'")
+
         rc, out, err = self.__exec(args, check_rc=False)
+
+        self.module.log(msg=f" rc : '{rc}'")
+        self.module.log(msg=f" out: '{out.strip()}'")
+        self.module.log(msg=f" err: '{err.strip()}'")
 
         if rc == 0:
             out = json.loads(out)
             installed = out.get("installed", False)
-            version_string = out.get("version", None)
+            version_full = out.get("version", None)
+            version_string = out.get("versionstring", None)
+            db_upgrade = out.get("needsDbUpgrade", False)
         else:
             err = out.strip()
 
@@ -195,7 +303,7 @@ class NextcloudClient(object):
             if exception:
                 err = exception.group("exception")
 
-        return (rc == 0, installed, version_string, err)
+        return (rc, installed, version_string, db_upgrade, err)
 
     def occ_maintenance_install(self):
         """
@@ -302,9 +410,9 @@ class NextcloudClient(object):
                 _msg = error  # " ".join([error, err])
 
         return dict(
-            failed = _failed,
-            changed = _changed,
-            msg = _msg
+            failed=_failed,
+            changed=_changed,
+            msg=_msg
         )
 
     def occ_config_list(self, type="system"):
@@ -403,6 +511,7 @@ def main():
             choices=[
                 "status",
                 "check",
+                "upgrade",
                 "maintenance:install",
                 "background:ajax",
                 "background:cron",
@@ -422,10 +531,10 @@ def main():
             required=False,
             type=str
         ),
-        owner = dict(
+        owner=dict(
             required=False,
             type=str,
-            default = "www-data"
+            default="www-data"
         ),
         database=dict(
             required=False,
@@ -458,7 +567,15 @@ if __name__ == '__main__':
 """
 sudo -u www-data php occ status
 
-sudo -u www-data php occ  maintenance:install --database='mysql' --database-host=database --database-port=3306 --database-name='nextcloud' --database-user='nextcloud' --database-pass='nextcloud' --admin-user='admin' --admin-pass='admin'
+sudo -u www-data php occ  maintenance:install \
+    --database='mysql' \
+    --database-host=database \
+    --database-port=3306 \
+    --database-name='nextcloud' \
+    --database-user='nextcloud' \
+    --database-pass='nextcloud' \
+    --admin-user='admin' \
+    --admin-pass='admin'
 
 sudo -u www-data php occ upgrade
 
