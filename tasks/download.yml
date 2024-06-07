@@ -2,6 +2,12 @@
 
 - name: define download information
   ansible.builtin.set_fact:
+    nextcloud_release: {}
+  when:
+    - nextcloud_release | count > 0
+
+- name: define download information
+  ansible.builtin.set_fact:
     nextcloud_release: "{{ nextcloud_defaults_release | combine(nextcloud_release, recursive=True) }}"
 
 - name: define delegate instance for download handling

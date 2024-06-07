@@ -54,9 +54,9 @@ class NextcloudApps(object):
 
         if not os.path.exists(self._occ):
             return dict(
-                failed = True,
-                changed = False,
-                msg = "missing occ"
+                failed=True,
+                changed=False,
+                msg="missing occ"
             )
 
         os.chdir(self.working_dir)
@@ -114,7 +114,7 @@ class NextcloudApps(object):
                             if len(install_msg) > 0:
                                 _msg = install_msg
                             if len(enabled_msg) > 0:
-                                _msg += f"{ enabled_msg}"
+                                _msg += f"{enabled_msg}"
 
                             res[app_name] = dict(
                                 failed=_failed,
@@ -158,9 +158,9 @@ class NextcloudApps(object):
         _state, _changed, _failed, state, changed, failed = results(self.module, result_state)
 
         result = dict(
-            changed = _changed,
-            failed = failed,
-            state = result_state
+            changed=_changed,
+            failed=failed,
+            state=result_state
         )
 
         return result
@@ -478,10 +478,10 @@ def main():
             required=True,
             type=str
         ),
-        owner = dict(
+        owner=dict(
             required=False,
             type=str,
-            default = "www-data"
+            default="www-data"
         ),
     )
 

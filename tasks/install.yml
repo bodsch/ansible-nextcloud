@@ -146,7 +146,7 @@
         path: "{{ nextcloud_install_base_directory }}/nextcloud/config"
         owner: "{{ nextcloud_owner }}"
         group: "{{ nextcloud_group }}"
-        mode: "0755"
+        mode: "0775"
 
     - name: extract nextcloud archive
       ansible.builtin.unarchive:
@@ -204,7 +204,7 @@
     get_attributes: false
   register: __stat_nextcloud_config
 
-- name: nextcloud config
+- name: link the nextcloud configuration outside the installation directory
   when:
     - __stat_nextcloud_config.stat.exists
     - __stat_nextcloud_config.stat.isdir | default('true')
@@ -253,11 +253,11 @@
 
 - name: enable config write
   ansible.builtin.file:
-    state: directory
-    mode: 0777
+    # state: directory
+    mode: "0775"
     owner: "{{ nextcloud_owner }}"
     group: "{{ nextcloud_group }}"
-    path: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}/config"
+    path: "{{ nextcloud_install_base_directory }}/nextcloud/config"
     recurse: true
 
 - name: create link for nextcloud-version {{ nextcloud_version }} to {{ nextcloud_install_base_directory }}/nextcloud/server
@@ -266,11 +266,45 @@
     dest: '{{ nextcloud_install_base_directory }}/nextcloud/server'
     owner: "{{ nextcloud_owner }}"
     group: "{{ nextcloud_group }}"
-    mode: "0755"
+    mode: "0775"
     state: link
     force: true
   notify:
     - restart php-fpm
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: nexcloud updates
+  block:
+
+    - name: check nextcloud for updates
+      nextcloud_occ:
+        command: "status"
+        working_dir: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}"
+        owner: "{{ nextcloud_owner }}"
+      register: nc_status
+
+    # - name: validate state  # noqa no-handler
+    #   ansible.builtin.debug:
+    #     msg: "{{ nc_status.msg }}"
+    #   when:
+    #     - nc_status.upgrade
+
+    - name: try nextcloud update
+      nextcloud_occ:
+        command: "upgrade"
+        working_dir: "{{ nextcloud_install_base_directory }}/nextcloud/{{ nextcloud_version }}"
+        owner: "{{ nextcloud_owner }}"
+      register: nc_update
+      when:
+        - nc_status.upgrade
+
+    # - name: validate state  # noqa no-handler
+    #   ansible.builtin.debug:
+    #     msg: "{{ nc_status.msg }}"
+    #   when:
+    #     - nc_status.upgrade | default('false') or nc_status.failed | default('false')
 
 - name: create custom fact file
   bodsch.core.facts:

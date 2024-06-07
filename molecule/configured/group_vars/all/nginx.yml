@@ -37,7 +37,7 @@ nginx_vhosts:
     redirect:
       from_port: 80
 
-    root_directory: "{{ nextcloud_install_base_directory }}/server"
+    root_directory: "{{ nextcloud_install_base_directory }}/nextcloud/server"
     root_directory_create: false
 
     index:
@@ -151,6 +151,11 @@ nginx_vhosts:
       "/remote":
         options: |
           return 301 /remote.php$request_uri;
+
+      # "/apps-external":
+      #   options: |
+      #     alias "{{ nextcloud_install_base_directory }}/nextcloud";
+      #     # try_files $uri $uri/ /index.php$request_uri;
 
       "/":
         options: |

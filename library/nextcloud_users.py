@@ -54,9 +54,9 @@ class NextcloudUsers(object):
 
         if not os.path.exists(self._occ):
             return dict(
-                failed = True,
-                changed = False,
-                msg = "missing occ"
+                failed=True,
+                changed=False,
+                msg="missing occ"
             )
 
         os.chdir(self.working_dir)
@@ -139,9 +139,9 @@ class NextcloudUsers(object):
         # self.module.log(msg=f" - failed  {_failed} '{failed}'")
 
         result = dict(
-            changed = _changed,
-            failed = False,
-            state = result_state
+            changed=_changed,
+            failed=False,
+            state=result_state
         )
 
         # self.module.log(msg=f" = {result}")
@@ -675,10 +675,10 @@ def main():
             required=True,
             type=str
         ),
-        owner = dict(
+        owner=dict(
             required=False,
             type=str,
-            default = "www-data"
+            default="www-data"
         ),
     )
 
