@@ -11,7 +11,8 @@
   version: 0.26.0
 
 - name: composer
-  src: geerlingguy.composer
+  src: https://github.com/geerlingguy/ansible-role-composer.git
+  scm: git
   version: 1.9.2
 
 ...
