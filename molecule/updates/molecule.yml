@@ -49,6 +49,8 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
       - /var/lib/containerd
+    capabilities:
+      - SYS_ADMIN
     tmpfs:
       - /run
       - /tmp
