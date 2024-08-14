@@ -90,10 +90,12 @@ class NextcloudApps(object):
                     if app_state in ["present", "enabled"]:
                         install_app = dict()
                         enabled_app = dict()
+
                         if not _installed:
                             install_app = self.occ_install_app(app_name=app_name)
-                            self.module.log(f" - {install_app}")
+                            # self.module.log(f" - install_app: '{install_app}'")
                         else:
+
                             res[app_name] = dict(
                                 changed=False,
                                 msg="The app has already been installed."
@@ -101,7 +103,7 @@ class NextcloudApps(object):
 
                         if not install_app.get("failed", False) and app_state == "enabled" and (app_name in disabled_apps or not _installed):
                             enabled_app = self.occ_enable_app(app_name=app_name, groups=groups)
-                            self.module.log(f" - {enabled_app}")
+                            # self.module.log(f" - {enabled_app}")
 
                         _failed = (install_app.get("failed", False) or enabled_app.get("failed", False))
                         _changed = (install_app.get("changed", False) or enabled_app.get("changed", False))
@@ -185,7 +187,6 @@ class NextcloudApps(object):
             not installed: "Nextcloud is not installed - only a limited number of commands are available"
             installed: ''
         """
-
         if not check_installed:
             return rc, out, err
 
@@ -263,10 +264,6 @@ class NextcloudApps(object):
 
         rc, out, err = self.__exec(args, check_rc=False)
 
-        # self.module.log(msg=f" rc : '{rc}'")
-        # self.module.log(msg=f" out: {type(out)} - '{out.strip()}'")
-        # self.module.log(msg=f" err: {type(err.strip())} - '{err.strip()}'")
-
         if rc == 0:
             _msg = "App was successfully removed."
             _failed = False
@@ -299,7 +296,6 @@ class NextcloudApps(object):
         rc, out, err = self.__exec(args, check_rc=False)
 
         if rc == 0:
-            # self.module.log(msg=f"  {out})")
             _installed = True
             _failed = False
             _changed = True
@@ -378,9 +374,6 @@ class NextcloudApps(object):
             changed=_changed,
             msg=_msg
         )
-
-    def occ_update_app(self, app_name):
-        pass
 
     def occ_app_settings(self, app_name, app_settings):
         """
