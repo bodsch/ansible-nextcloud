@@ -219,11 +219,22 @@ Install Nextcloud Apps.
 | :---            | :----      | :----       |
 | `name`          | ` `        | App name |
 | `state`         | `present`  | State of the App (`present`, `absent`, `enabled` or `disabled` ) |
+| `settings`      | `{}`       | Dictionary of Application Settings |
 
 ```yaml
 nextcloud_apps:
   - name: calendar
     state: disabled
+  - name: richdocuments
+    state: disabled
+    settings:
+      canonical_webroot: https://office.molecule.lan
+      disable_certificate_verification: true
+      edit_groups: "admin"
+      public_wopi_url: https://office.molecule.lan
+      use_groups: "admin"
+      wopi_allowlist: "127.0.0.1/32"
+      wopi_url: https://office.molecule.lan
 ```
 
 ---
