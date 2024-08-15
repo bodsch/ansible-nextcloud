@@ -105,5 +105,10 @@ nextcloud_apps:
     state: enabled
   - name: recognize
     state: enabled
+  - name: mail
+    state: absent
+    settings:
+      antispam_reporting_ham: ""
+      antispam_reporting_spam: ""
 
 ...

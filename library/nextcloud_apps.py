@@ -80,6 +80,10 @@ class NextcloudApps(object):
                 """
                 app_state = app.get("state", "present")
                 app_name = app.get("name", None)
+                app_settings = app.get("settings", {})
+                config_failed = False
+                config_changed = False
+                config_msg = ""
                 groups = []
 
                 if app_name:
@@ -90,18 +94,26 @@ class NextcloudApps(object):
                     if app_state in ["present", "enabled"]:
                         install_app = dict()
                         enabled_app = dict()
+                        config_app = dict()
+
                         if not _installed:
                             install_app = self.occ_install_app(app_name=app_name)
-                            self.module.log(f" - {install_app}")
+                            # self.module.log(f" - install_app: '{install_app}'")
                         else:
+
                             res[app_name] = dict(
                                 changed=False,
                                 msg="The app has already been installed."
                             )
 
+                        # enable application
                         if not install_app.get("failed", False) and app_state == "enabled" and (app_name in disabled_apps or not _installed):
                             enabled_app = self.occ_enable_app(app_name=app_name, groups=groups)
-                            self.module.log(f" - {enabled_app}")
+                            # self.module.log(f" - {enabled_app}")
+
+                        # configure application
+                        if isinstance(app_settings, dict) and len(app_settings) > 0:
+                            config_app = self.occ_app_settings(app_name=app_name, app_settings=app_settings)
 
                         _failed = (install_app.get("failed", False) or enabled_app.get("failed", False))
                         _changed = (install_app.get("changed", False) or enabled_app.get("changed", False))
@@ -109,6 +121,7 @@ class NextcloudApps(object):
                         _msg = ""
                         install_msg = install_app.get("msg", "")
                         enabled_msg = enabled_app.get("msg", "")
+                        config_msg = config_app.get("msg", "")
 
                         if _failed:
                             if len(install_msg) > 0:
@@ -128,6 +141,8 @@ class NextcloudApps(object):
                                 _msg = install_msg
                             elif len(install_msg) == 0 and len(enabled_msg) > 0:
                                 _msg = enabled_msg
+                            elif len(install_msg) == 0 and len(enabled_msg) == 0 and len(config_msg) > 0:
+                                _msg = config_msg
 
                             if len(_msg) > 0:
                                 res[app_name] = dict(
@@ -185,7 +200,6 @@ class NextcloudApps(object):
             not installed: "Nextcloud is not installed - only a limited number of commands are available"
             installed: ''
         """
-
         if not check_installed:
             return rc, out, err
 
@@ -259,13 +273,9 @@ class NextcloudApps(object):
         args.append("--no-ansi")
         args.append(app_name)
 
-        self.module.log(msg=f" args: '{args}'")
+        # self.module.log(msg=f" args: '{args}'")
 
         rc, out, err = self.__exec(args, check_rc=False)
-
-        # self.module.log(msg=f" rc : '{rc}'")
-        # self.module.log(msg=f" out: {type(out)} - '{out.strip()}'")
-        # self.module.log(msg=f" err: {type(err.strip())} - '{err.strip()}'")
 
         if rc == 0:
             _msg = "App was successfully removed."
@@ -299,7 +309,6 @@ class NextcloudApps(object):
         rc, out, err = self.__exec(args, check_rc=False)
 
         if rc == 0:
-            # self.module.log(msg=f"  {out})")
             _installed = True
             _failed = False
             _changed = True
@@ -379,17 +388,70 @@ class NextcloudApps(object):
             msg=_msg
         )
 
-    def occ_update_app(self, app_name):
-        pass
-
     def occ_app_settings(self, app_name, app_settings):
         """
+            sudo --preserve-env --user www-data php occ config:app:get richdocuments disable_certificate_verification
+            sudo --preserve-env --user www-data php occ config:app:set --output json --value yes --update-only richdocuments disable_certificate_verification
         """
+        # self.module.log(msg=f"occ_app_settings({app_name}, {app_settings})")
+
         failed = False
         changed = False
         msg = "not to do."
+        result_state = []
 
-        return (failed, changed, msg)
+        for config_key, config_value in app_settings.items():
+            res = {}
+            # self.module.log(msg=f"  - {config_key}  -> {config_value})")
+
+            if isinstance(config_value, bool):
+                config_value = 'yes' if config_value else 'no'
+
+            if not isinstance(config_value, str):
+                self.module.log(msg=f"ignore value {config_value} for key {config_key}")
+                continue
+
+            args = []
+            args += self.occ_base_args
+
+            args.append("config:app:set")
+            args.append("--no-ansi")
+            args.append("--output")
+            args.append("json")
+            args.append("--value")
+            args.append(config_value)
+            args.append(app_name)
+            args.append(config_key)
+
+            # self.module.log(msg=f" args: '{args}'")
+
+            rc, out, err = self.__exec(args, check_rc=False)
+
+            if rc == 0:
+                _msg = f"config value for {config_key} was successfully set to {config_value}."
+                _failed = False
+                _changed = True
+            else:
+                _failed = True
+                _changed = False
+                _msg = out.strip()
+
+            res[app_name] = dict(
+                changed=_changed,
+                msg=_msg
+            )
+
+        _state, _changed, _failed, state, changed, failed = results(self.module, result_state)
+
+        result = dict(
+            changed=_changed,
+            failed=failed,
+            msg=result_state
+        )
+
+        return result
+
+        # return (_failed, _changed, result_state)
 
     def occ_list_apps(self):
         """
