@@ -91,15 +91,15 @@ class NextcloudApps(object):
 
                 if rc == 0:
                     res[app] = dict(
-                        failed = False,
-                        changed = True,
-                        msg = f"successfully updated to version {version}."
+                        failed=False,
+                        changed=True,
+                        msg=f"successfully updated to version {version}."
                     )
                 else:
                     res[app] = dict(
-                        failed = True,
-                        changed = False,
-                        msg = f"update to version {version} failed."
+                        failed=True,
+                        changed=False,
+                        msg=f"update to version {version} failed."
                     )
 
                 result_state.append(res)
@@ -181,7 +181,7 @@ class NextcloudApps(object):
         # self.module.log(msg=f"  {len(err)}")
 
         if rc == 0:
-            pattern = re.compile(r"Update for (?P<app>.*) to version (?P<version>.*) is available.*", flags=re.MULTILINE) #  | re.DOTALL)
+            pattern = re.compile(r"Update for (?P<app>.*) to version (?P<version>.*) is available.*", flags=re.MULTILINE)  # | re.DOTALL)
 
             for match in pattern.finditer(out):
                 # self.module.log(f"match : {match}")
@@ -244,7 +244,7 @@ class NextcloudApps(object):
 
         rc, out, err = self.__exec(args, check_rc=False)
 
-        return (rc,  out, err)
+        return (rc, out, err)
 
     def __exec(self, commands, check_rc=True):
         """

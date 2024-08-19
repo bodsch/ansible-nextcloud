@@ -70,7 +70,7 @@ class FilterModule(object):
         # remove empty elements
         dirs = list(filter(None, dirs))
 
-        dirs.sort(reverse = False)
+        dirs.sort(reverse=False)
 
         display.v(f"= return : {dirs}")
 

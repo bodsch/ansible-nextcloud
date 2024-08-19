@@ -1,5 +1,12 @@
 ---
 
+- name: nextcloud apps - install app
+  nextcloud_apps:
+    apps: "{{ nextcloud_apps }}"
+    working_dir: "{{ nextcloud_install_base_directory }}/nextcloud/server"
+    owner: "{{ nextcloud_owner }}"
+  register: nc_apps_that_have_been_installed
+
 - name: nextcloud apps - check for updates
   nextcloud_update_apps:
     state: "check"
@@ -27,12 +34,5 @@
 #     msg: "{{ nc_result_of_the_apps_that_have_been_updated.state }}"
 #   when:
 #     - nc_result_of_the_apps_that_have_been_updated.state is defined
-
-- name: nextcloud apps - install app
-  nextcloud_apps:
-    apps: "{{ nextcloud_apps }}"
-    working_dir: "{{ nextcloud_install_base_directory }}/nextcloud/server"
-    owner: "{{ nextcloud_owner }}"
-  register: nc_apps_that_have_been_installed
 
 ...
