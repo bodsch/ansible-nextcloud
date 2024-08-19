@@ -10,7 +10,7 @@ class GitHub:
 
     def __init__(self):
         """ """
-        self.github_access_token = os.environ.get('GH_ACCESS_TOKEN', None)
+        self.github_access_token = os.environ.get('GH_TOKEN', None)
         self.github_repository = os.environ.get('GH_REPOSITORY', None)
         self.github_username = os.environ.get('GH_USERNAME', None)
         self.github_keep_workflows = os.environ.get('GH_KEEP_WORKFLOWS', 2)
@@ -18,7 +18,7 @@ class GitHub:
         self.github_base_url = "https://api.github.com"
 
         if not self.github_access_token:
-            print("missing environment variable 'GH_ACCESS_TOKEN'")
+            print("missing environment variable 'GH_TOKEN'")
             sys.exit(1)
 
         if not self.github_repository:
@@ -86,7 +86,7 @@ class GitHub:
 
     def active_workflows(self, workflows):
         """ """
-        return [x for x in workflows.get("workflows", []) if x.get("state", None) in ["active", "disabled_inactivity"]]
+        return [x for x in workflows.get("workflows", []) if x.get("state", None) in ["active", "disabled_inactivity", "skipped"]]
 
     def remove_old_workflows(self, workflows):
         """ """
@@ -109,7 +109,7 @@ class GitHub:
 
                 msg_wf = ','.join(str(x) for x in runned_wf)
 
-                print(f"I will delete the following workflows: {msg_wf}")
+                print("  delete the following workflows:")
                 self.remove_workflows(runned_wf)
 
     def list_workflow(self, wf_id):
@@ -138,7 +138,9 @@ class GitHub:
             print(f"  - id {wf_id}")
             url = f"{self.github_base_url}/repos/{self.github_username}/{self.github_repository}/actions/runs/{wf_id}"
 
-            requests.delete(url, headers=self.headers)
+            response = requests.delete(url, headers=self.headers)
+
+            # print(f"  = {response}")
 
         return result
 

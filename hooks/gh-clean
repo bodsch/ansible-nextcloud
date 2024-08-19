@@ -5,9 +5,8 @@ set -e
 org=bodsch
 repo=$(basename $(git rev-parse --show-toplevel))
 
-export GH_USERNAME="${org}"
 export GH_REPOSITORY="${repo}"
+export GH_USERNAME="${org:-bodsch}"
+export GH_KEEP_WORKFLOWS="${GH_KEEP_WORKFLOWS:-2}"
 
 python hooks/gh-clean.py
-
-exit 0
