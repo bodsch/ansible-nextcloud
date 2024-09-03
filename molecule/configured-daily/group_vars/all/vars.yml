@@ -1,6 +1,6 @@
 ---
 
-nextcloud_version: "28-daily-{{ '%Y-%m-%d' | strftime( ( ansible_date_time.epoch | int ) - ( 86400 * 3 )  ) }}" # 2024-01-18
+nextcloud_version: "18-daily-{{ '%Y-%m-%d' | strftime( ( ansible_date_time.epoch | int ) - ( 86400 * 3 )  ) }}" # 2024-01-18
 
 nextcloud_release_type: daily
 
