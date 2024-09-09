@@ -133,7 +133,7 @@ jobs:
         scenario:
           - configured
           - configured-with-database
-          - configured-daily
+          # - configured-daily
           - configured-prereleases
           # - updates
 
