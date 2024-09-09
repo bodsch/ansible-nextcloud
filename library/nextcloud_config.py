@@ -342,7 +342,7 @@ class NextcloudClient(object):
                         if mail_auth.get("password", None):
                             data["system"]['mail_smtppassword'] = mail_auth.get("password", None)
 
-                        #if mail_auth.get("type", None):
+                        # if mail_auth.get("type", None):
                         #    data["system"]['mail_smtpauthtype'] = mail_auth.get("type", None)
 
                 if mail.get("template_class", None):
