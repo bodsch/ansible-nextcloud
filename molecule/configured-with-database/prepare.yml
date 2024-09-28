@@ -50,7 +50,7 @@
   gather_facts: true
 
   roles:
-    - role: apparmor
+    # - role: apparmor
     - role: snapd
     - role: mariadb
 

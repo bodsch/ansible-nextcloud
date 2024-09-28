@@ -75,6 +75,7 @@ nextcloud_defaults_database:                                                   #
     collation: ""                                                              #
 
 nextcloud_defaults_defaults:
+  # https://docs.nextcloud.com/server/29/admin_manual/configuration_server/config_sample_php_parameters.html
   language:
     default: ""                                                 # en
     force: ""                                                   # false
@@ -89,7 +90,7 @@ nextcloud_defaults_defaults:
   session:
     lifetime: ""                                                # "60 * 60 * 24"
     relaxed_expiry: ""                                          # false
-    keepalive: ""                                               # true
+    keepalive: true                                             # true
   auto_logout: ""                                               # false
   token:
     auth_enforced: ""                                           # false
@@ -98,9 +99,13 @@ nextcloud_defaults_defaults:
     bruteforce:
       protection:
         enabled: ""                                             # true
+        testing: ""                                             # false
     webauthn:
       enabled: ""                                               # true
     storeCryptedPassword: ""                                    # true
+
+  theme: ""                                                     #
+  enforce_theme: ""                                             # E.g. dark, dark-highcontrast, default, light, light-highcontrast, opendyslexic
 
   ratelimit:
     protection:
@@ -182,7 +187,8 @@ nextcloud_defaults_defaults:
     file: ""                                                    # '/var/log/nextcloud.log'
     logfile_audit: ""                                           # '/var/log/audit.log'
     filemode: ""                                                # 0640
-    level: ""                                                   # 2
+    # https://docs.nextcloud.com/server/29/admin_manual/configuration_server/logging_configuration.html#log-level
+    level: 1                                                   # 2 [0 = debug, 1 = info, 2 = warn, 3 = error, 4 = fatal]
     level_frontend: ""                                          # 2
     syslog_tag: ""                                              # 'Nextcloud'
     syslog_tag_audit: ""                                        # 'Nextcloud'
@@ -329,7 +335,7 @@ nextcloud_defaults_defaults:
   objectstore: []
 
   sharing:
-    manager_factory: ""                                         #
+    manager_factory: ""                                         # '\OC\Share20\ProviderFactory',
     enable_mail_link_password_expiration: ""                    # false
     mail_link_password_expiration_interval: ""                  # 3600
     maxAutocompleteResults: ""                                  # 25

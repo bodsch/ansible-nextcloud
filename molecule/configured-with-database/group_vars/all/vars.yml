@@ -1,5 +1,7 @@
 ---
 
+nextcloud_version: 30.0.0
+
 nextcloud_install_base_directory: /var/www/nextcloud.molecule.lan
 
 nextcloud_instande_id: oczgldo770me
@@ -121,8 +123,8 @@ nextcloud_apps:
     state: enabled
   - name: contacts
     state: enabled
-  - name: forms
-    state: enabled
+  #- name: forms
+  #  state: absent
   - name: groupfolders
     state: enabled
   - name: recognize

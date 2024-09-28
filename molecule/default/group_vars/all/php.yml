@@ -53,7 +53,7 @@ php_modules:
       opcache.revalidate_freq=1
       opcache.max_file_size=0
   - name: pdo_mysql
-    enabled: true
+    enabled: false
     priority: 20
     content: |
       extension=pdo_mysql.so

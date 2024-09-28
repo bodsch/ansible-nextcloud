@@ -240,6 +240,11 @@ class NextcloudClient(object):
             if parameters.get("remember_login_cookie_lifetime", None):
                 data["system"]['remember_login_cookie_lifetime'] = parameters.get("remember_login_cookie_lifetime", None)
 
+            if parameters.get("theme", None):
+                data["system"]["theme"] = parameters.get("theme")
+            if parameters.get("enforce_theme", None):
+                data["system"]["enforce_theme"] = parameters.get("enforce_theme")
+
             session = parameters.get("session")
 
             if session:
@@ -251,6 +256,14 @@ class NextcloudClient(object):
 
                 if session.get("keepalive", None):
                     data["system"]['session_keepalive'] = session.get("keepalive", None)
+
+            maintenance = parameters.get("maintenance")
+
+            if maintenance:
+                maintenance_enabled = maintenance.get("enabled", True)
+                maintenance_window_start = maintenance.get("window_start", 1)
+                if maintenance_enabled and maintenance_window_start:
+                    data["system"]['maintenance_window_start'] = maintenance_window_start
 
             if parameters.get("auto_logout", None):
                 data["system"]['auto_logout'] = parameters.get("auto_logout", None)
@@ -269,6 +282,9 @@ class NextcloudClient(object):
             if auth:
                 if auth.get("bruteforce", {}).get("protection", {}).get("enabled", None):
                     data["system"]['auth.bruteforce.protection.enabled'] = auth.get("bruteforce", {}).get("protection", {}).get("enabled", None)
+
+                if auth.get("bruteforce", {}).get("protection", {}).get("testing", None):
+                    data["system"]['auth.bruteforce.protection.testing'] = auth.get("bruteforce", {}).get("protection", {}).get("testing", None)
 
                 if auth.get("webauthn", {}).get("enabled", None):
                     data["system"]['auth.webauthn.enabled'] = auth.get("webauthn", {}).get("enabled", None)
@@ -601,6 +617,8 @@ class NextcloudClient(object):
 
             redis = parameters.get("redis")
 
+            # TODO
+            # no array .. only single entry
             if redis:
                 redis_array = []
                 for r in redis:
