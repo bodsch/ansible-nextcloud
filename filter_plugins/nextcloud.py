@@ -3,6 +3,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import os
+import re
 from ansible.utils.display import Display
 
 display = Display()
@@ -104,3 +105,57 @@ class FilterModule(object):
         display.v(f"- result : {package}")
 
         return package
+
+    def _validate_upper_and_lower_case(self, password):
+
+        valide = False
+        msg = "Password needs to contain at least one lower and one upper case character."
+
+        pattern = re.compile('/^(?=.*[a-z])(?=.*[A-Z]).+$/')
+        exception = re.search(pattern, password)
+
+        if exception:
+            display.v(f"- exception : {exception}")
+        else:
+            valide = True
+            msg = ""
+
+        return (valide, msg)
+
+    def _validate_special_character(self, password):
+
+        valide = False
+        msg = "Password needs to contain at least one special character."
+
+        if password.isalnum():
+            valide = True
+            msg = ""
+
+        return (valide, msg)
+
+    def _validate_numeric_character(self, password):
+
+        valide = False
+        msg = "Password needs to contain at least one numeric character."
+
+        pattern = re.compile('/^(?=.*\d).+$/')
+        exception = re.search(pattern, password)
+
+        if exception:
+            display.v(f"- exception : {exception}")
+        else:
+            valide = True
+            msg = ""
+
+        return (valide, msg)
+
+    def _validate_length(self, password, length=10):
+
+        valide = False
+        msg = f"Password needs to be at least {length} characters long."
+
+        if len(password) >= length:
+            valide = True
+            msg = ""
+
+        return (valide, msg)
