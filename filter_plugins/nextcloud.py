@@ -20,6 +20,7 @@ class FilterModule(object):
             'nc_directories': self.directories,
             'nc_configured_cache': self.configured_cache,
             'nc_database_driver': self.configured_database,
+            'nc_validate_passwords': self.validate_passwords,
         }
 
     def directories(self, data):
@@ -106,17 +107,71 @@ class FilterModule(object):
 
         return package
 
+    def validate_passwords(self, data, config):
+        """
+        """
+        # display.v(f"- data : {data}, {config}")
+
+        result = {}
+
+        user_data = {user.get("name"): user.get("password", None) for user in data}
+
+        for username, password in user_data.items():
+            valid_upper_lower = True
+            valid_upper_lower_msg = ""
+            valid_special_char = True
+            valid_special_char_msg = ""
+            valid_numeric_char = True
+            valid_numeric_char_msg = ""
+            valid_length = True
+            valid_length_msg = ""
+
+            display.v(f"- validate password for '{username}' ... ")
+            display.v(f"  -> {config}")
+
+            if config.get("upper_and_lower_case", True):
+                (valid_upper_lower, valid_upper_lower_msg) = self._validate_upper_and_lower_case(password)
+
+            if config.get("special_character", True):
+                (valid_special_char, valid_special_char_msg) = self._validate_special_character(password)
+
+            if config.get("numeric_character", True):
+                (valid_numeric_char, valid_numeric_char_msg) = self._validate_numeric_character(password)
+
+            if config.get("length", True):
+                (valid_length, valid_length_msg) = self._validate_length(password, config.get("length"))
+
+            if not valid_upper_lower or not valid_special_char or not valid_numeric_char or not valid_length:
+                validate_msgs = list(filter(None, [
+                    valid_upper_lower_msg,
+                    valid_special_char_msg,
+                    valid_numeric_char_msg,
+                    valid_length_msg]
+                ))
+
+                result[username] = dict(
+                    errors=validate_msgs
+                )
+
+        if len(result) > 0:
+            return dict(
+                failed=True,
+                result=result
+            )
+        else:
+            return dict(
+                failed=False
+            )
+
     def _validate_upper_and_lower_case(self, password):
 
         valide = False
         msg = "Password needs to contain at least one lower and one upper case character."
 
-        pattern = re.compile('/^(?=.*[a-z])(?=.*[A-Z]).+$/')
+        pattern = re.compile(r"^(?=.*[a-z])(?=.*[A-Z]).+$")
         exception = re.search(pattern, password)
 
         if exception:
-            display.v(f"- exception : {exception}")
-        else:
             valide = True
             msg = ""
 
@@ -127,7 +182,7 @@ class FilterModule(object):
         valide = False
         msg = "Password needs to contain at least one special character."
 
-        if password.isalnum():
+        if not password.isalnum():
             valide = True
             msg = ""
 
@@ -138,12 +193,10 @@ class FilterModule(object):
         valide = False
         msg = "Password needs to contain at least one numeric character."
 
-        pattern = re.compile('/^(?=.*\d).+$/')
+        pattern = re.compile(r"^(?=.*\d).+$")
         exception = re.search(pattern, password)
 
         if exception:
-            display.v(f"- exception : {exception}")
-        else:
             valide = True
             msg = ""
 
