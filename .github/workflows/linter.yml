@@ -22,9 +22,8 @@ on:
       - 'fix/**'
       - '!doc/**'
     paths:
-      - 'plugins/**'
-      - '!roles/**'
-      - '!.github/workflows/test_role*.yml'
+      - '!.github/workflows/*.yml'
+      - '!README.md'
       - '.config/pycodestyle.cfg'
   pull_request:
     branches:
@@ -32,13 +31,12 @@ on:
       - 'fix/**'
       - '!doc/**'
     paths:
-      - 'plugins/**'
-      - '!roles/**'
-      - '!.github/workflows/test_role*.yml'
+      - '!.github/workflows/*.yml'
+      - '!README.md'
       - '.config/pycodestyle.cfg'
 
 jobs:
-  pep8:
+  pycodestyle:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

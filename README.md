@@ -54,6 +54,12 @@ nextcloud_admin:
   username: admin
   password: admin
 
+nextcloud_password_validation:
+  upper_and_lower_case: true
+  special_character: false
+  numeric_character: false
+  length: 10
+  
 nextcloud_instande_id: ""
 nextcloud_password_salt: ""
 nextcloud_data_directory: ""
