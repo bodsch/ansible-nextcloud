@@ -19,6 +19,7 @@ nextcloud_dependencies:
   - tar
   - bzip2
   - python3-pip
+  - sudo
   - php{{ php_version }}-xmlrpc
   - php{{ php_version }}-ldap
   - php{{ php_version }}-curl

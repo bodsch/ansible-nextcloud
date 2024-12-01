@@ -3,6 +3,14 @@
 
 Ansible role to install and configure nextcloud.
 
+---
+
+> I am in the process of transferring this role to a [collection](https://github.com/bodsch/ansible-collection-cloud) and will therefore no longer process any issues or merge requests here.  
+> However, I will include them in the collection!  
+> **Please be patient until I have completed the work!**
+
+---
+
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-nextcloud/main.yml?branch=main)][ci]
 [![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-nextcloud)][issues]
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-nextcloud)][releases]
